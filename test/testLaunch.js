@@ -1,6 +1,6 @@
 var  myTestFilePath=[
     //"Template",
-    "InstancedGroup",
+    "QEMSimplification",
     //"MyPMLoader"
 ];
 for(var i=0;i<myTestFilePath.length;i++){
