@@ -449,10 +449,10 @@ InstancedGroupTest.prototype={
 
                 //完成测试
         },
-        //每次选取距离最近的两个点进行collapse
+        //每次选取距离最近的两个点进行collapse--似乎没啥效果
         test6:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext();
-                var nameTest="直接坍塌的效果";
+                var nameTest="每次选取距离最近的两个点进行collapse";
                 console.log('start test:'+nameTest);
                 //开始测试
                 var scope=this;
@@ -470,25 +470,87 @@ InstancedGroupTest.prototype={
                         console.log(geometry);//index 48612
                         console.log(attributes);
                         //console.log(mesh.geometry.index.array.length/3)
-                        for(var k=0;k<1500;k++){//1830//1731//
+                        /*for(var k=0;k<500;k++){//1830//1731//
                                 //flag=false;
                                 //while(!flag){//index 34077//14525//14046//4446
                                 var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
-                                flag=myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                var pos=myQEMSimplification.findSuitablePoint(mesh);
+                                //flag=
+                                    myQEMSimplification.deleteMeshPoint(mesh,pos[0],pos[1]);
                                 console.log(mesh);
                                 console.log(geometry);
                                 console.log(attributes);
                                 //}
 
-                        }/**/
+                        }*/
 
-                        /*window.setInterval((function(){
-                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
-                                deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                        window.setInterval((function(){
+                                var pos=myQEMSimplification.findSuitablePoint(mesh);
+                                myQEMSimplification.deleteMeshPoint(mesh,pos[0],pos[1]);
                                 console.log(mesh);
                                 console.log(geometry);
                                 console.log(attributes);
-                        }),10);*/
+                        }),10);/**/
+
+                        mesh.scale.set(4,4,4);
+                        //deleteMeshTriangle(mesh);
+
+
+                        /*var index=mesh.geometry.index;
+                         //for(var i=0;i<index.count;i++)
+                                 //console.log(index.array[i]);
+                         var index2=new THREE.InstancedBufferAttribute(new Uint16Array(804), 1);//头部、上衣、裤子、动作
+                         for(var i=0;i<804;i++)
+                                 index2.array[i]=index.array[i];
+                         mesh.geometry.index=index2;*/
+
+                        scope.scene.add(glb.scene.children[1]);
+                });//
+
+                //完成测试
+        },
+        //每次选取到相邻三角面距离和最小的点进行collapse
+        test7:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext();
+                var nameTest="每次选取距离最近的两个点进行collapse";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                var myQEMSimplification=new QEMSimplification();
+                loader.load("zhao.glb", (glb) => {
+                        console.log(glb)
+                        //console.log(glb.scene.children[0]);//scene.children[1].children[3]
+                        //scene.children[1].children[2].children[0]
+                        //scene.children[1].children[3]
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+                        //console.log(mesh.geometry.index.array.length/3)
+                        /*for(var k=0;k<500;k++){//1830//1731//
+                                //flag=false;
+                                //while(!flag){//index 34077//14525//14046//4446
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                var pos=myQEMSimplification.findSuitablePoint(mesh);
+                                //flag=
+                                    myQEMSimplification.deleteMeshPoint(mesh,pos[0],pos[1]);
+                                console.log(mesh);
+                                console.log(geometry);
+                                console.log(attributes);
+                                //}
+
+                        }*/
+
+                        window.setInterval((function(){
+                                var pos=myQEMSimplification.findSuitablePoint2(mesh);
+                                myQEMSimplification.deleteMeshPoint(mesh,pos[0],pos[1]);
+                                //console.log(mesh);
+                                console.log(geometry.index.count);
+                                //console.log(attributes);
+                        }),5);/**/
 
                         mesh.scale.set(4,4,4);
                         //deleteMeshTriangle(mesh);
@@ -509,4 +571,4 @@ InstancedGroupTest.prototype={
         },
 }
 var myInstancedGroupTest=new InstancedGroupTest();
-myInstancedGroupTest.test6();
+myInstancedGroupTest.test7();
