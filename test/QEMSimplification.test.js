@@ -2,9 +2,13 @@
 function InstancedGroupTest(){
         this.scene;
         this.camera;
+
+        this.myQEMSimplification;
 }
 InstancedGroupTest.prototype={
         setContext:function () {
+                this.myQEMSimplification=new QEMSimplification();
+
                 var nameContext="";
                 console.log('set context:'+nameContext);
                 var camera, scene, renderer;
@@ -14,6 +18,45 @@ InstancedGroupTest.prototype={
                 function init() {
                         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
                         camera.position.z = 20;
+
+                        scene = new THREE.Scene();
+
+                        renderer = new THREE.WebGLRenderer();
+                        renderer.setPixelRatio(window.devicePixelRatio);
+                        renderer.setSize(window.innerWidth, window.innerHeight);
+                        renderer.setClearColor(0xff00ff);
+                        document.body.appendChild( renderer.domElement );
+                        //container.appendChild(renderer.domElement);
+
+                        if (renderer.capabilities.isWebGL2 === false && renderer.extensions.has('ANGLE_instanced_arrays') === false) {
+                                document.getElementById('notSupported').style.display = '';
+                                return;
+                        }
+                        light = new THREE.AmbientLight(0xffffff,1.0)
+                        scene.add(light);
+                        new PlayerControl(camera);
+                }
+                function render(){
+                        renderer.render( scene, camera );
+                        requestAnimationFrame(render);
+                }
+                this.scene=scene;
+                this.camera=camera;
+        },
+        //调整相机
+        setContext2:function () {
+                this.myQEMSimplification=new QEMSimplification();
+
+                var nameContext="";
+                console.log('set context:'+nameContext);
+                var camera, scene, renderer;
+                var light;
+                init();
+                render();
+                function init() {
+                        camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
+                        camera.position.z = 20;
+                        camera.position.y = 8;
 
                         scene = new THREE.Scene();
 
@@ -163,9 +206,10 @@ InstancedGroupTest.prototype={
 
                 //完成测试
         },
-        //直接坍塌的效果
+        //直接坍塌的效果//index 48612//坍塌到中间点
+        //32169时丢失一个手
         test4:function (contextType){
-                if(typeof(contextType)==="undefined")this.setContext();
+                if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
                 console.log('start test:'+nameTest);
                 //开始测试
@@ -183,7 +227,8 @@ InstancedGroupTest.prototype={
                         console.log(geometry);//index 48612
                         console.log(attributes);
                         //console.log(mesh.geometry.index.array.length/3)
-                        for(var k=0;k<1500;k++){//1830//1731//
+                        //for(var k=0;k<900;k++){//1830//1731//
+                        /*while(geometry.index.count>20000){//40%
                                 //flag=false;
                                 //while(!flag){//index 34077//14525//14046//4446
                                         var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
@@ -193,17 +238,21 @@ InstancedGroupTest.prototype={
                                         console.log(attributes);
                                 //}
 
-                        }/**/
-
-                        /*window.setInterval((function(){
-                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
-                                deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
-                                console.log(mesh);
-                                console.log(geometry);
-                                console.log(attributes);
-                        }),10);*/
+                        }*/
 
                         mesh.scale.set(4,4,4);
+                        //mesh.position.set(-3500,0,0);
+                        window.setInterval((function(){
+                                if(geometry.index.count/3<8000)return;
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                console.log("三角面的个数为："+geometry.index.count/3);
+                                //console.log(mesh);
+                                //console.log(geometry);
+                                //console.log(attributes);
+                        }),10);/**/
+
+
                         //deleteMeshTriangle(mesh);
 
 
@@ -217,12 +266,7 @@ InstancedGroupTest.prototype={
 
                         scope.scene.add(glb.scene.children[1]);
                         function deleteMeshPoint(mesh,p1,p2){//将mesh中的p1点删除，对应为p2点
-                                var distance=
-                                    Math.pow(mesh.geometry.attributes.position.array[3*p1]-mesh.geometry.attributes.position.array[3*p2],2)+
-                                    Math.pow(mesh.geometry.attributes.position.array[3*p1+1]-mesh.geometry.attributes.position.array[3*p2+1],2)+
-                                    Math.pow(mesh.geometry.attributes.position.array[3*p1+2]-mesh.geometry.attributes.position.array[3*p2+2],2);
-                                //if(distance>0.005)return false;
-                                console.log(distance);
+
 
 
                                 mesh.geometry.attributes.position.array[3*p2]
@@ -296,6 +340,185 @@ InstancedGroupTest.prototype={
                                         j+=3;
                                 }
                                 mesh.geometry.index=index2;/**/
+                        }
+                });//
+
+                //完成测试
+        },
+        //过程不可见
+        test4_1:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        console.log(glb)
+                        //console.log(glb.scene.children[0]);//scene.children[1].children[3]
+                        //scene.children[1].children[2].children[0]
+                        //scene.children[1].children[3]
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+                        //console.log(mesh.geometry.index.array.length/3)
+                        console.log("初始三角面的个数为："+geometry.index.count/3);//16204
+                        for(var k=0;k<5000;k++){//1830//1731//
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                this.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                console.log("三角面的个数为："+geometry.index.count/3);
+                        }//15598//13306
+
+                        mesh.scale.set(4,4,4);
+
+                        scope.scene.add(glb.scene.children[1]);
+                        function deleteMeshPoint(mesh,p1,p2){//将mesh中的p1点删除，对应为p2点
+                                mesh.geometry.attributes.position.array[3 * p2]
+                                    = (mesh.geometry.attributes.position.array[3 * p1] + mesh.geometry.attributes.position.array[3 * p2]) / 2;
+                                mesh.geometry.attributes.position.array[3 * p2 + 1]
+                                    = (mesh.geometry.attributes.position.array[3 * p1 + 1] + mesh.geometry.attributes.position.array[3 * p2 + 1]) / 2;
+                                mesh.geometry.attributes.position.array[3 * p2 + 2]
+                                    = (mesh.geometry.attributes.position.array[3 * p1 + 2] + mesh.geometry.attributes.position.array[3 * p2 + 2]) / 2;
+
+
+                                var index = mesh.geometry.index;
+                                for (var i = 0; i < index.count; i++)
+                                        if (index.array[i] === p1) index.array[i] = p2;
+
+                                var needDeleteTriangle = 0;
+                                for (var i = 0; i < index.count / 3; i = i + 3) {
+                                        if (index.array[i] === index.array[i + 1] ||
+                                            index.array[i] === index.array[i + 2] ||
+                                            index.array[i + 1] === index.array[i + 2])
+                                                needDeleteTriangle++;
+                                }
+                                //console.log(needDeleteTriangle);//有两个三角形需要删除
+                                //如果一个三角形点有重合，则删除这个三角形
+                                var index2=new THREE.InstancedBufferAttribute(new Uint16Array(index.count-needDeleteTriangle*3), 1);//头部、上衣、裤子、动作
+                                var j=0;
+                                for(var i=0;i<index2.count;i=i+3)
+                                        if(!(index.array[i]===index.array[i+1]||
+                                            index.array[i]===index.array[i+2]||
+                                            index.array[i+1]===index.array[i+2])){
+                                                index2.array[j]=index.array[i];
+                                                index2.array[j+1]=index.array[i+1];
+                                                index2.array[j+2]=index.array[i+2];
+                                                j=j+3;
+                                        }
+                                mesh.geometry.index=index2;/**/
+
+                                return true;
+                        }
+                        function deleteMeshTriangle(mesh){//将mesh中的p1点删除，对应为p2点
+                                var index=mesh.geometry.index;
+                                /*for(var i=0;i<index.count;i++)
+                                        if(index.array[i]===p1)index.array[i]=p2;*/
+                                var needDeleteTriangle=0;
+                                /*for(var i=0;i<index.count/3;i=i+3){
+                                        if(index.array[i]===index.array[i+1]||
+                                            index.array[i]===index.array[i+2]||
+                                            index.array[i+1]===index.array[i+2])
+                                                needDeleteTriangle++;
+                                }*/
+                                //如果一个三角形3点有重合，则删除这个三角形
+                                var index2=new THREE.InstancedBufferAttribute(new Uint16Array(index.count/2-needDeleteTriangle*3), 1);//头部、上衣、裤子、动作
+                                var j=0;
+                                for(var i=0;i<index2.count;i=i+6){
+                                        index2.array[j]=index.array[i];
+                                        index2.array[j+1]=index.array[i+1];
+                                        index2.array[j+2]=index.array[i+2];
+                                        j+=3;
+                                }
+                                mesh.geometry.index=index2;/**/
+                        }
+                        function updateIndex(mesh){
+                                var index=mesh.geometry.index;
+                                var needDeleteTriangle=0;
+                                //如果一个三角形3点有重合，则删除这个三角形
+                                var index2=new THREE.InstancedBufferAttribute(new Uint16Array(index.count), 1);//头部、上衣、裤子、动作
+                                var j=0;
+                                for(var i=0;i<index2.count;i=i+3){
+                                        index2.array[j]=index.array[i];
+                                        index2.array[j+1]=index.array[i+1];
+                                        index2.array[j+2]=index.array[i+2];
+                                        j+=3;
+                                }
+                                mesh.geometry.index=index2;/**/
+                        }
+                });//
+
+                //完成测试
+        },
+        //过程可见，间隔更短
+        test4_2:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+
+
+                        mesh.scale.set(4,4,4);
+                        //mesh.position.set(-3500,0,0);
+                        window.setInterval((function(){
+                                if(geometry.index.count/3<8000)return;
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                console.log("三角面的个数为："+geometry.index.count/3);
+                        }),5);
+
+                        scope.scene.add(glb.scene.children[1]);
+                        function deleteMeshPoint(mesh,p1,p2){//将mesh中的p1点删除，对应为p2点
+
+
+
+                                mesh.geometry.attributes.position.array[3*p2]
+                                    =(mesh.geometry.attributes.position.array[3*p1]+mesh.geometry.attributes.position.array[3*p2])/2;
+                                mesh.geometry.attributes.position.array[3*p2+1]
+                                    =(mesh.geometry.attributes.position.array[3*p1+1]+mesh.geometry.attributes.position.array[3*p2+1])/2;
+                                mesh.geometry.attributes.position.array[3*p2+2]
+                                    =(mesh.geometry.attributes.position.array[3*p1+2]+mesh.geometry.attributes.position.array[3*p2+2])/2;
+
+
+                                var index=mesh.geometry.index;
+                                for(var i=0;i<index.count;i++)
+                                        if(index.array[i]===p1)index.array[i]=p2;
+
+                                var needDeleteTriangle=0;
+                                for(var i=0;i<index.count/3;i=i+3){
+                                        if(index.array[i]===index.array[i+1]||
+                                            index.array[i]===index.array[i+2]||
+                                            index.array[i+1]===index.array[i+2])
+                                                needDeleteTriangle++;
+                                }
+                                //console.log(needDeleteTriangle);//有两个三角形需要删除
+                                //如果一个三角形点有重合，则删除这个三角形
+                                var index2=new THREE.InstancedBufferAttribute(new Uint16Array(index.count-needDeleteTriangle*3), 1);//头部、上衣、裤子、动作
+                                var j=0;
+                                for(var i=0;i<index2.count;i=i+3)
+                                        if(!(index.array[i]===index.array[i+1]||
+                                            index.array[i+1]===index.array[i+2]||
+                                            index.array[i+1]===index.array[i+2])){
+                                                index2.array[j]=index.array[i];
+                                                index2.array[j+1]=index.array[i+1];
+                                                index2.array[j+2]=index.array[i+2];
+                                                j=j+3;
+                                        }
+                                mesh.geometry.index=index2;
+
+                                return true;
                         }
                 });//
 
@@ -571,4 +794,4 @@ InstancedGroupTest.prototype={
         },
 }
 var myInstancedGroupTest=new InstancedGroupTest();
-myInstancedGroupTest.test7();
+myInstancedGroupTest.test4_1();

@@ -1,5 +1,5 @@
 function QEMSimplification(){
-    
+
 }
 
 QEMSimplification.prototype = {
@@ -69,7 +69,7 @@ QEMSimplification.prototype = {
         var j = 0;
         for (var i = 0; i < index2.count; i = i + 3)
             if (!(index.array[i] === index.array[i + 1] ||
-                index.array[i + 1] === index.array[i + 2] ||
+                index.array[i] === index.array[i + 2] ||
                 index.array[i + 1] === index.array[i + 2])) {
                 index2.array[j] = index.array[i];
                 index2.array[j + 1] = index.array[i + 1];
