@@ -733,7 +733,7 @@ InstancedGroupTest.prototype={
                 //完成测试
         },
 
-        //设置为一个网格
+        //制作了一个三角网格平面
         test5:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -771,7 +771,7 @@ InstancedGroupTest.prototype={
                         //设置index
 
                         var index2;
-                        my9_9();
+                        my9_9_2();
                         console.log("position",position);
                         console.log("index2",index2);
                         console.log("初始三角面的个数:"+geometry.index.count/3);
@@ -805,6 +805,37 @@ InstancedGroupTest.prototype={
                                         }
                                 geometry.index=index2;
                          }
+                        function my9_9_2(){
+                                index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
+                                k=0;
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*i+(j+1);
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                console.log([
+                                                        k,
+                                                        index2.array[3*k  ],
+                                                        index2.array[3*k+1],
+                                                        index2.array[3*k+2]
+                                                ]);
+                                                k++;
+                                        }
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*(i+1)+j;
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                console.log([
+                                                        k,
+                                                        index2.array[3*k  ],
+                                                        index2.array[3*k+1],
+                                                        index2.array[3*k+2]
+                                                ]);
+                                                k++;
+                                        }
+                                geometry.index=index2;
+                        }
                         /*window.setInterval((function(){
                                 if(geometry.index.count/3<10000)return;
                                 var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
