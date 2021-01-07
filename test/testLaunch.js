@@ -27,7 +27,6 @@ Test.prototype={
         renderer.domElement.renderer=renderer;
         renderer.domElement.scene=scene;
         renderer.domElement.camera=camera;
-        console.log(renderer.domElement);
 
         loop();
         function loop() {
@@ -36,7 +35,18 @@ Test.prototype={
         }
     },
 }
-
+function Referee(){
+    this.index=0;//记录断言的序号
+    this.result=true;
+    this.assertion=function (A,B) {
+        this.index++;
+        if(A!==B){
+            this.false;
+            alert("this assertion is failed!");
+            console.log("This assertion"+this.index+" is failed!");
+        }else console.log("This assertion"+this.index+" is successful!");
+    }
+}
 function Text(str,color,size,parentNode){//文本
     if (typeof(parentNode) == "undefined") parentNode = document.body;
     this.parentNode=parentNode;
