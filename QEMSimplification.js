@@ -44,6 +44,7 @@ QEMSimplification.prototype = {
         return pos0;
     },
     deleteMeshPoint: function (mesh, p1, p2) {//将mesh中的p1点删除，对应为p2点
+        if(this.onSkirt(mesh, p1, p2))return ;//如果该边位于网格边缘，不进行collapse
         mesh.geometry.attributes.position.array[3 * p2]
             = (mesh.geometry.attributes.position.array[3 * p1] + mesh.geometry.attributes.position.array[3 * p2]) / 2;
         mesh.geometry.attributes.position.array[3 * p2 + 1]
@@ -203,5 +204,24 @@ QEMSimplification.prototype = {
             }
         }
         return errorMatrix;
-    }
+    },
+
+    //判断p1、p2这条边是否为在网格的边缘
+    //判断p1、p2这条边是否为两个三角形共用
+    onSkirt: function (mesh, p1, p2) {//p1,p2两点构成一条边//
+        var geometry=mesh.geometry;
+        var index = geometry.index;
+        var flag_triangle=0;
+        for (i = 0; i < index.count / 3; i = i + 3){
+            var flag_pos=0;
+            if(index.array[i]===p1||index.array[i]===p2)flag_pos++;
+            if(index.array[i+1]===p1||index.array[i+1]===p2)flag_pos++;
+            if(index.array[i+2]===p1||index.array[i+2]===p2)flag_pos++;
+            if(flag_pos>=2){
+                flag_triangle++;
+                if(flag_triangle>=2)return false;//使用该边的三角形至少两个//在网格内部
+            }
+        }
+        return true;//使用该边的三角形少于两个//在网格边缘
+    },
 }
