@@ -47,7 +47,7 @@ QEMSimplification.prototype = {
         var position=attributes.position;
         var index = mesh.geometry.index;
 
-        if(this.isSkirt(mesh, p1, p2,p3))return ;//如果该边位于网格边缘，不进行collapse
+        //if(this.isSkirt(mesh, p1, p2,p3))return ;//如果该边位于网格边缘，不进行collapse
         //for(var )
         for(var i=0;i<position.count;i++)
             if(isSameLocation(p1, p2, i)){
