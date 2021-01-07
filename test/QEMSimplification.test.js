@@ -372,14 +372,13 @@ InstancedGroupTest.prototype={
                         var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
                         var geometry=mesh.geometry;
                         var attributes=geometry.attributes;
+                        scope.myQEMSimplification.simplifyIndex(mesh);
                         console.log(mesh);
                         console.log(geometry);//index 48612
                         console.log(attributes);
 
 
                         mesh.scale.set(4,4,4);
-                        //mesh.position.set(-3500,0,0);
-                        var scope=this;
                         window.setInterval((function(){
                                 //if(geometry.index.count/3<8000)return;
                                 var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
@@ -388,50 +387,48 @@ InstancedGroupTest.prototype={
                         }),0);
 
                         scope.scene.add(glb.scene.children[1]);
-                        function deleteMeshPoint(mesh,p1,p2){//将mesh中的p1点删除，对应为p2点
-
-
-
-                                mesh.geometry.attributes.position.array[3*p2]
-                                    =(mesh.geometry.attributes.position.array[3*p1]+mesh.geometry.attributes.position.array[3*p2])/2;
-                                mesh.geometry.attributes.position.array[3*p2+1]
-                                    =(mesh.geometry.attributes.position.array[3*p1+1]+mesh.geometry.attributes.position.array[3*p2+1])/2;
-                                mesh.geometry.attributes.position.array[3*p2+2]
-                                    =(mesh.geometry.attributes.position.array[3*p1+2]+mesh.geometry.attributes.position.array[3*p2+2])/2;
-
-
-                                var index=mesh.geometry.index;
-                                for(var i=0;i<index.count;i++)
-                                        if(index.array[i]===p1)index.array[i]=p2;
-
-                                var needDeleteTriangle=0;
-                                for(var i=0;i<index.count/3;i=i+3){
-                                        if(index.array[i]===index.array[i+1]||
-                                            index.array[i]===index.array[i+2]||
-                                            index.array[i+1]===index.array[i+2])
-                                                needDeleteTriangle++;
-                                }
-                                //console.log(needDeleteTriangle);//有两个三角形需要删除
-                                //如果一个三角形点有重合，则删除这个三角形
-                                var index2=new THREE.InstancedBufferAttribute(new Uint16Array(index.count-needDeleteTriangle*3), 1);//头部、上衣、裤子、动作
-                                var j=0;
-                                for(var i=0;i<index2.count;i=i+3)
-                                        if(!(index.array[i]===index.array[i+1]||
-                                            index.array[i+1]===index.array[i+2]||
-                                            index.array[i+1]===index.array[i+2])){
-                                                index2.array[j]=index.array[i];
-                                                index2.array[j+1]=index.array[i+1];
-                                                index2.array[j+2]=index.array[i+2];
-                                                j=j+3;
-                                        }
-                                mesh.geometry.index=index2;
-
-                                return true;
-                        }
                 });//
 
                 //完成测试
         },
+        //计算重复结点的个数//似乎有大量重复结点
+        test4_3:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        var position=attributes.position;
+                        var index=geometry.index;
+                        console.log(mesh);
+                        console.log(geometry);
+                        console.log(attributes);
+                        console.log(position);
+                        flag=0;
+                        for(i=0;i<position.count;i++)
+                                for(j=i+1;j<position.count;j++){
+                                        if(
+                                            position.array[3*i]===position.array[3*j]&&
+                                            position.array[3*i+1]===position.array[3*j+1]&&
+                                            position.array[3*i+2]===position.array[3*j+2]
+                                        ){
+                                                flag++;
+                                                scope.tag.reStr(flag);
+                                        }
+                                }
+                        console.log(flag+"/"+position.count);//8314/
+                });//
+
+                //完成测试
+        },
+
+        //设置为一个网格
+
         //每个点与自己的初始位置相差为判断条件--似乎没啥效果
         test5:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext();

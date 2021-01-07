@@ -224,4 +224,24 @@ QEMSimplification.prototype = {
         }
         return true;//使用该边的三角形少于两个//在网格边缘
     },
+
+    //简化索引index
+    simplifyIndex:function (mesh) {
+        var geometry=mesh.geometry;
+        var attributes=geometry.attributes;
+        var position=attributes.position;
+        var index=geometry.index;
+        for(var i=0;i<index.count;i++){
+            var pos=index.array[i];
+            for(j=0;j<position.count;j++)
+                if(
+                    position.array[3*j  ]===position.array[3*pos  ]&&
+                    position.array[3*j+1]===position.array[3*pos+1]&&
+                    position.array[3*j+2]===position.array[3*pos+2]
+                ){
+                    index.array[i]=j;//修改index
+                    break;//使得index指向第一个
+                }
+        }
+    },
 }
