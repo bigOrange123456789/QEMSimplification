@@ -236,7 +236,7 @@ QEMSimplification.prototype = {
         var geometry=mesh.geometry;
         var index = geometry.index;
         var flag_triangle=0;
-        console.log(index.count / 3);
+        //console.log(index.count / 3);
         for (i = 0; i < index.count ; i+=3){
             var flag_pos=0;
             if(index.array[i]===p1||index.array[i]===p2)flag_pos++;
