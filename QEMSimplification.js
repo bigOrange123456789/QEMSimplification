@@ -67,7 +67,7 @@ QEMSimplification.prototype = {
         //如果一个三角形点有重合，则删除这个三角形
         var index2 = new THREE.InstancedBufferAttribute(new Uint16Array(index.count - needDeleteTriangle * 3), 1);//头部、上衣、裤子、动作
         var j = 0;
-        for (var i = 0; i < index2.count; i = i + 3)
+        for (var i = 0; i < index.count; i = i + 3)
             if (!(index.array[i] === index.array[i + 1] ||
                 index.array[i] === index.array[i + 2] ||
                 index.array[i + 1] === index.array[i + 2])) {
