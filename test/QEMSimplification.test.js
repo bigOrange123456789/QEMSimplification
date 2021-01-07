@@ -360,7 +360,7 @@ InstancedGroupTest.prototype={
 
                 //完成测试
         },
-        //过程可见，间隔0
+        //过程可见，间隔0  //使用了简化索引simplifyIndex
         test4_2:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -373,10 +373,13 @@ InstancedGroupTest.prototype={
                         var geometry=mesh.geometry;
                         var attributes=geometry.attributes;
                         scope.myQEMSimplification.simplifyIndex(mesh);
+                        console.log(glb.scene.children[1]);//children[2].children[0]
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
                         console.log(mesh);
                         console.log(geometry);//index 48612
                         console.log(attributes);
-
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
 
                         mesh.scale.set(4,4,4);
                         window.setInterval((function(){
@@ -422,6 +425,40 @@ InstancedGroupTest.prototype={
                                         }
                                 }
                         console.log(flag+"/"+position.count);//8314/
+                });//
+
+                //完成测试
+        },
+        //过程可见，间隔0  //希望解决索引问题--失败
+        test4_4:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        //scope.myQEMSimplification.simplifyIndex(mesh);
+                        console.log(glb.scene.children[1]);//children[2].children[0]
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
+
+                        mesh.scale.set(4,4,4);
+                        window.setInterval((function(){
+                                if(geometry.index.count/3<10000)return;
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                scope.tag.reStr("三角面的个数:"+geometry.index.count/3);
+                        }),0);
+
+                        scope.scene.add(glb.scene.children[1]);
                 });//
 
                 //完成测试
@@ -700,4 +737,4 @@ InstancedGroupTest.prototype={
 }
 var myTest=new Test();
 var myInstancedGroupTest=new InstancedGroupTest(myTest);
-myInstancedGroupTest.test4_2();
+myInstancedGroupTest.test4_4();
