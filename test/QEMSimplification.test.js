@@ -1,9 +1,11 @@
 //InstancedGroup.test
-function InstancedGroupTest(){
+function InstancedGroupTest(myTest){
         this.scene;
         this.camera;
+        this.myTest=myTest;
 
         this.myQEMSimplification;
+        this.tag;
 }
 InstancedGroupTest.prototype={
         setContext:function () {
@@ -14,7 +16,7 @@ InstancedGroupTest.prototype={
                 var camera, scene, renderer;
                 var light;
                 init();
-                render();
+                loop();
                 function init() {
                         camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
                         camera.position.z = 20;
@@ -36,9 +38,9 @@ InstancedGroupTest.prototype={
                         scene.add(light);
                         new PlayerControl(camera);
                 }
-                function render(){
+                function loop(){
                         renderer.render( scene, camera );
-                        requestAnimationFrame(render);
+                        requestAnimationFrame(loop);
                 }
                 this.scene=scene;
                 this.camera=camera;
@@ -49,38 +51,14 @@ InstancedGroupTest.prototype={
 
                 var nameContext="";
                 console.log('set context:'+nameContext);
-                var camera, scene, renderer;
-                var light;
-                init();
-                render();
-                function init() {
-                        camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
-                        camera.position.z = 20;
-                        camera.position.y = 8;
 
-                        scene = new THREE.Scene();
+                [this.scene, this.camera]=this.myTest.init();
 
-                        renderer = new THREE.WebGLRenderer();
-                        renderer.setPixelRatio(window.devicePixelRatio);
-                        renderer.setSize(window.innerWidth, window.innerHeight);
-                        renderer.setClearColor(0xff00ff);
-                        document.body.appendChild( renderer.domElement );
-                        //container.appendChild(renderer.domElement);
+                this.camera.position.z = 20;
+                this.camera.position.y = 8;
 
-                        if (renderer.capabilities.isWebGL2 === false && renderer.extensions.has('ANGLE_instanced_arrays') === false) {
-                                document.getElementById('notSupported').style.display = '';
-                                return;
-                        }
-                        light = new THREE.AmbientLight(0xffffff,1.0)
-                        scene.add(light);
-                        new PlayerControl(camera);
-                }
-                function render(){
-                        renderer.render( scene, camera );
-                        requestAnimationFrame(render);
-                }
-                this.scene=scene;
-                this.camera=camera;
+                new PlayerControl(this.camera);
+                this.tag=new Text("","green",25);
         },
         //进行模型坍塌:可以压缩为原来的86.3%
         test3:function (contextType){
@@ -382,7 +360,7 @@ InstancedGroupTest.prototype={
 
                 //完成测试
         },
-        //过程可见，间隔更短
+        //过程可见，间隔0
         test4_2:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -401,12 +379,13 @@ InstancedGroupTest.prototype={
 
                         mesh.scale.set(4,4,4);
                         //mesh.position.set(-3500,0,0);
+                        var scope=this;
                         window.setInterval((function(){
-                                if(geometry.index.count/3<8000)return;
+                                //if(geometry.index.count/3<8000)return;
                                 var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
-                                deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
-                                console.log("三角面的个数为："+geometry.index.count/3);
-                        }),5);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                scope.tag.reStr("三角面的个数:"+geometry.index.count/3);
+                        }),0);
 
                         scope.scene.add(glb.scene.children[1]);
                         function deleteMeshPoint(mesh,p1,p2){//将mesh中的p1点删除，对应为p2点
@@ -722,5 +701,6 @@ InstancedGroupTest.prototype={
                 //完成测试
         },
 }
-var myInstancedGroupTest=new InstancedGroupTest();
-myInstancedGroupTest.test4_1();
+var myTest=new Test();
+var myInstancedGroupTest=new InstancedGroupTest(myTest);
+myInstancedGroupTest.test4_2();
