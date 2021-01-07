@@ -23,6 +23,11 @@ Test.prototype={
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0xff00ff);
         document.body.appendChild( renderer.domElement );
+        renderer.domElement.id="myCanvas"
+        renderer.domElement.renderer=renderer;
+        renderer.domElement.scene=scene;
+        renderer.domElement.camera=camera;
+        console.log(renderer.domElement);
 
         loop();
         function loop() {
