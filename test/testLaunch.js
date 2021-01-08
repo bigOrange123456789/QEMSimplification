@@ -1,8 +1,41 @@
 function Test() {
-
+    this.myTestFilePath=[
+        //"Template",
+        "QEMSimplification",
+        //"MyPMLoader"
+    ]
 }
 Test.prototype={
-    init:function(){
+    launch:function(){
+        //this.loadFile(this.myTestFilePath);
+        var scope=this;
+        window.setTimeout((function(){
+            var myQEMSimplificationTest=new QEMSimplificationTest(scope);
+            myQEMSimplificationTest.main();
+        }),100);
+        /*script.onload=function(){
+            var myQEMSimplificationTest=new QEMSimplificationTest(scope);
+            myQEMSimplificationTest.main();
+        }*/
+
+    },
+    loadFile:function(){
+        var myTestFilePath=this.myTestFilePath;
+        document.write("<script language=javascript src=test/tool/UI.js></script>");
+        document.write("<script language=javascript src=test/tool/Referee.js></script>");
+        for(var i=0;i<myTestFilePath.length;i++){
+            console.log("The file being tested is "+myTestFilePath[i]+".js");
+
+            document.write("<script language=javascript src=test/"+myTestFilePath[i]+".test.js></script>");
+        }
+        //var script=document.createElement('script');
+        //   script.setAttribute('type','text/javascript');
+        //   script.setAttribute('src','jquery-1.8.3.js');
+        //for(var i=0;i<)
+
+
+    },
+    initContext:function(){
         var scene=this.initScene();
         var camera=this.initCamere();
         this.render(scene, camera);
@@ -35,49 +68,3 @@ Test.prototype={
         }
     },
 }
-function Referee(){
-    this.index=0;//记录断言的序号
-    this.result=true;
-    this.assertion=function (A,B,arrayFlag) {
-        if(typeof(arrayFlag)==="undefined")arrayFlag="";
-        this.index++;
-
-        if(typeof(A.length)!="undefined"){//为数组
-            if(typeof(A.length)==="undefined"){
-                this.result=false;
-                alert("this assertion is failed!");
-                console.log(arrayFlag+"This assertion"+this.index+" is failed!");
-            }else{
-                if(A.length!==B.length){
-                    alert("this assertion is failed!");
-                    console.log(arrayFlag+"This assertion"+this.index+" is failed!");
-                }else if(A.length===0){
-                        console.log(arrayFlag+"This assertion"+this.index+" is successful!");
-                }else{
-                    for(var i=0;i<A.length;i++)
-                        this.assertion(A[i],B[i],i+"/"+A.length+":");
-                }
-            }
-        }else{//不是数组
-            if(A!==B){
-                this.result=false;
-                alert("this assertion is failed!");
-                console.log(arrayFlag+"This assertion"+this.index+" is failed!");
-            }else console.log(arrayFlag+"This assertion"+this.index+" is successful!");
-        }
-
-    }
-}
-
-
-document.write("<script language=javascript src=test/UI.js></script>");
-var  myTestFilePath=[
-    //"Template",
-    "QEMSimplification",
-    //"MyPMLoader"
-];
-for(var i=0;i<myTestFilePath.length;i++){
-    console.log("The file being tested is "+myTestFilePath[i]+".js");
-    document.write("<script language=javascript src=test/"+myTestFilePath[i]+".test.js></script>");
-}
-//var myTest=new Text("TEST","0x00ffff",100);

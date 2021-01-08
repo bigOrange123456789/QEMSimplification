@@ -1,5 +1,5 @@
-//InstancedGroup.test
-function InstancedGroupTest(myTest){
+//QEMSimplification.test
+function QEMSimplificationTest(myTest){
         this.scene;
         this.camera;
         this.myTest=myTest;
@@ -8,8 +8,11 @@ function InstancedGroupTest(myTest){
         this.tag;
         this.button_flag;
         this.referee;
+        this.main=function () {
+                this.test6();
+        }
 }
-InstancedGroupTest.prototype={
+QEMSimplificationTest.prototype={
         setContext:function () {
                 var nameContext="";
                 console.log('set context:'+nameContext)
@@ -70,7 +73,7 @@ InstancedGroupTest.prototype={
                         else button.reStr("继续");
                 });
 
-                [this.scene, this.camera]=this.myTest.init();
+                [this.scene, this.camera]=this.myTest.initContext();
 
                 this.camera.position.z = 20;
                 this.camera.position.y = 8;
@@ -1953,6 +1956,3 @@ InstancedGroupTest.prototype={
                 });//glb文件读取结束
         },
 }
-var myTest=new Test();
-var myInstancedGroupTest=new InstancedGroupTest(myTest);
-myInstancedGroupTest.test6();
