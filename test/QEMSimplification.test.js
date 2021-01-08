@@ -53,7 +53,7 @@ QEMSimplificationTest.prototype={
                 this.scene=scene;
                 this.camera=camera;
         },
-        //调整相机
+        //新环境设置
         setContext2:function () {
                 var nameContext="";
                 console.log('set context:'+nameContext)
@@ -76,6 +76,30 @@ QEMSimplificationTest.prototype={
                 this.camera.position.y = 8;
 
                 new PlayerControl(this.camera);
+        },
+        //无按钮
+        setContext3:function () {
+                var nameContext="";
+                console.log('set context:'+nameContext)
+                var scope=this;
+                this.myQEMSimplification=new QEMSimplification();
+                this.referee=new Referee();
+                this.tag=new Text("","green",25);
+
+
+                [this.scene, this.camera]=this.myTest.initContext();
+
+                this.camera.position.z = 20;
+                this.camera.position.y = 8;
+
+                //new PlayerControl(this.camera);
+                controls=new OrbitControls(this.camera ,document.getElementById("myCanvas"));
+                //这里开始调控摄像头
+                controls.reset();
+                //this.camera.position.copy(new THREE.Vector3(-30, 0.5, 25));
+                var targetPosition = new THREE.Vector3(0,8,0);
+                this.camera.lookAt(targetPosition);
+                controls.target.copy(targetPosition);
         },
         //每个点与自己的初始位置相差为判断条件--似乎没啥效果
         test1_1:function (contextType){
@@ -648,6 +672,39 @@ QEMSimplificationTest.prototype={
         },
         //赵院士模型collapse,尝试使得过程可见--未成功
         test4_1_1:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext3();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                scope.tag.reStr("正在处理，请稍等...");
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log("初始三角面的个数为："+geometry.index.count/3);//16204
+
+                        mesh.scale.set(4,4,4);
+                        scope.scene.add(glb.scene.children[1]);
+
+                        var target=prompt("目标三角面个数(0-15000)):",14000);
+                        var myFlag=prompt("是否只简化背面(yes/no):","yes");
+
+                        //for(var k=0;k<15000;k++){//1830//1731//
+                        while(geometry.index.count/3>target){
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                if(myFlag==="yes")this.myQEMSimplification.deleteMeshPoint_(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                else this.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                        }//15598//13306
+                        scope.tag.reStr("三角面的个数为："+geometry.index.count/3);
+                });//
+
+                //完成测试
+        },
+        //赵院士模型collapse,过程不可见,指定坍塌区域
+        test4_1_2:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
                 console.log('start test:'+nameTest);
@@ -2017,7 +2074,8 @@ QEMSimplificationTest.prototype={
                 var scope=this;
                 var loader= new THREE.GLTFLoader();
                 loader.load("zhao.glb", (glb) => {
-                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var obj=glb.scene.children[1];
+                        var mesh=obj.children[3];//index 顶点个数2004//前三个点为：0，1，2
                         var geometry=mesh.geometry;
                         var attributes=geometry.attributes;
                         var position=attributes.position;
@@ -2069,19 +2127,30 @@ QEMSimplificationTest.prototype={
                                 geometry.index=index2;
                         }
 
-                        scope.scene.add(glb.scene.children[1]);
 
 
+
+                        function myTest0(myMesh){
+                                scope.myQEMSimplification.deleteMeshPoint_Test1(
+                                    myMesh
+                                );
+                        }
                         function myTest(){
                                 scope.myQEMSimplification.deleteMeshPoint_Test1(
                                     mesh
                                 );
                         }
+                        function wireFrame0(myMesh){
+                                myMesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});//mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+                                //scope.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                                //scope.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                                //mesh.scale.set(1,1,1);
+                        }
                         function wireFrame(){
                                 mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});//mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
-                                scope.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
-                                scope.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
-                                mesh.scale.set(20,20,20);
+                                //scope.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                                //scope.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                                mesh.scale.set(1,1,1);
                         }
                         function myTest1(rand) {
                                 scope.myQEMSimplification.deleteMeshPoint(
@@ -2113,8 +2182,18 @@ QEMSimplificationTest.prototype={
                         console.log(mesh.geometry.attributes.position.array[3 * 102])
                         //myTest();wireFrame();
 
+
+                        scope.scene.add(mesh.clone());//
+                        wireFrame();
                         window.setTimeout((function () {
-                                myTest();//wireFrame();
+                                mesh2=mesh.clone();
+                                mesh2.geomotry=mesh.geometry.clone();
+                                //mesh2.geomotry.attributes=mesh.geometry.attributes.clone();
+                                mesh2.position.x+=20;
+                                myTest0(mesh2);
+                                wireFrame0(mesh2);
+                                scope.scene.add(mesh2);
+
                         }), 0);
                         window.setTimeout((function () {
                                 console.log(//2
@@ -2123,7 +2202,8 @@ QEMSimplificationTest.prototype={
                                     mesh.geometry.attributes.position.array[3 * 102+1],
                                     mesh.geometry.attributes.position.array[3 * 103+1],
                                 )
-                                mesh.position.x+=1.15;
+                                //mesh.position.x+=1.15;
+
                         }), 1000);/**/
                 });//glb文件读取结束
         },
@@ -2212,17 +2292,19 @@ QEMSimplificationTest.prototype={
                 //赵院士模型collapse,过程不可见
                 //this.test4_1();
                 //赵院士模型collapse,过程可见--未成功
-                //this.test4_1_1();
+                this.test4_1_1();
+                //赵院士模型collapse,过程不可见,指定坍塌区域
+                //this.test4_2();
 
                 //无重点、过程可视、有贴图
-                this.test6();
+                //this.test6();
                 //无重点、线框图、断言
                 //this.test6_5();
 
                 //重点、线框图、断言
                 //this.test8_3();
 
-                //测试deleteMeshPoint函数//线框图、断言//尝试找出过程可视化中的错误
+                //测试deleteMeshPoint函数//线框图、断言//尝试找出过程可视化中的错误//模型一旦添加到场景中position就不可变了
                 //this.test9();
                 //测试deleteMeshPoint函数,过程不可视
                 //this.test9_1();

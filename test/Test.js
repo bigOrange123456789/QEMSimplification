@@ -8,6 +8,7 @@ function Test() {
 Test.prototype={
     loadFile:function(){
         var myTestFilePath=this.myTestFilePath;
+        document.write("<script language=javascript src=test/tool/OrbitControls.js></script>");
         document.write("<script language=javascript src=test/tool/UI.js></script>");
         document.write("<script language=javascript src=test/tool/Referee.js></script>");
         for(var i=0;i<myTestFilePath.length;i++){
