@@ -105,14 +105,14 @@ QEMSimplification.prototype = {
         }
 
 
-        for (var i = 0; i < index.count; i++)
+        /*for (var i = 0; i < index.count; i++)
             if (index.array[i] === p1) {
                 //index.array[i]
                 index.array[i] = p2;
                 //position.array[3 * index.array[i]    ]=mid[0];
                 //position.array[3 * index.array[i]+1  ]=mid[1];
                 //position.array[3 * index.array[i]+2  ]=mid[2];
-            }//index.array[i] = p2/**/
+            }//index.array[i] = p2*/
 
         var needDeleteTriangle = 0;
         for (var i = 0; i < index.count / 3; i = i + 3) {
@@ -128,6 +128,54 @@ QEMSimplification.prototype = {
         for (var i = 0; i < index.count; i = i + 3)
             if (
                 !notTriangle(index.array[i], index.array[i+1], index.array[i+2])
+            ) {
+                index2.array[j] = index.array[i];
+                index2.array[j + 1] = index.array[i + 1];
+                index2.array[j + 2] = index.array[i + 2];
+                j = j + 3;
+            }
+        mesh.geometry.index = index2;
+
+        return true;
+    },
+    deleteMeshPoint_Test1: function (mesh) {//将mesh中的p1点删除，对应为p2点
+        var p1=2;
+        var p2=3;
+        var geometry=mesh.geometry;
+        var attributes=geometry.attributes;
+        var position=attributes.position;
+        var index = mesh.geometry.index;
+
+        //if(this.isSkirt(mesh, p1, p2,p3))return ;//如果该边位于网格边缘，不进行collapse
+        //for(var )
+        var mid=[
+            -10, -5, 0
+        ];
+        var _p1=[
+            -10, -6, 0
+        ];
+        var _p2=[
+            -10, -4, 0
+        ];
+        for(var is=[2,3,102,103],i=0;i<4;i++)
+            {
+                position.array[3 * is[i]] = mid[0];
+                position.array[3 * is[i] + 1] = mid[1];
+                position.array[3 * is[i] + 2] = mid[2];
+            }
+
+
+        for (var i = 0; i < index.count; i++)
+            if (index.array[i] === 2) {
+                //index.array[i] = 3;//这里似乎对过程不可见的无影响，可见的有影响
+            }//index.array[i] = p2/**/
+
+        //如果一个三角形点有重合，则删除这个三角形
+        var index2 = new THREE.InstancedBufferAttribute(new Uint16Array(index.count - 3), 1);//头部、上衣、裤子、动作
+        var j = 0;
+        for (var i = 0; i < index.count; i = i + 3)
+            if (
+                i!==6
             ) {
                 index2.array[j] = index.array[i];
                 index2.array[j + 1] = index.array[i + 1];
