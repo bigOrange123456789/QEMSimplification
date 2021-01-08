@@ -8,9 +8,6 @@ function QEMSimplificationTest(myTest){
         this.tag;
         this.button_flag;
         this.referee;
-        this.main=function () {
-                this.test6();
-        }
 }
 QEMSimplificationTest.prototype={
         setContext:function () {
@@ -1955,4 +1952,10 @@ QEMSimplificationTest.prototype={
                         }),100);
                 });//glb文件读取结束
         },
+
+        main:function () {
+                this.test6();
+        },
 }
+var myQEMSimplificationTest=new QEMSimplificationTest(myTest);
+myQEMSimplificationTest.main();
