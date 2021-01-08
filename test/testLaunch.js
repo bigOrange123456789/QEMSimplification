@@ -38,45 +38,39 @@ Test.prototype={
 function Referee(){
     this.index=0;//记录断言的序号
     this.result=true;
-    this.assertion=function (A,B) {
+    this.assertion=function (A,B,arrayFlag) {
+        if(typeof(arrayFlag)==="undefined")arrayFlag="";
         this.index++;
-        if(A!==B){
-            this.false;
-            alert("this assertion is failed!");
-            console.log("This assertion"+this.index+" is failed!");
-        }else console.log("This assertion"+this.index+" is successful!");
+
+        if(typeof(A.length)!="undefined"){//为数组
+            if(typeof(A.length)==="undefined"){
+                this.result=false;
+                alert("this assertion is failed!");
+                console.log(arrayFlag+"This assertion"+this.index+" is failed!");
+            }else{
+                if(A.length!==B.length){
+                    alert("this assertion is failed!");
+                    console.log(arrayFlag+"This assertion"+this.index+" is failed!");
+                }else if(A.length===0){
+                        console.log(arrayFlag+"This assertion"+this.index+" is successful!");
+                }else{
+                    for(var i=0;i<A.length;i++)
+                        this.assertion(A[i],B[i],i+"/"+A.length+":");
+                }
+            }
+        }else{//不是数组
+            if(A!==B){
+                this.result=false;
+                alert("this assertion is failed!");
+                console.log(arrayFlag+"This assertion"+this.index+" is failed!");
+            }else console.log(arrayFlag+"This assertion"+this.index+" is successful!");
+        }
+
     }
 }
-function Text(str,color,size,parentNode){//文本
-    if (typeof(parentNode) == "undefined") parentNode = document.body;
-    this.parentNode=parentNode;
-    this.str=str;
-    this.color=color;
-    this.size=size;
-    this.oText=h1(str,color,size,parentNode);
-    this.reStr=function(str){
-        this.oText.innerHTML=str;
-    }
-    function h1(str,color,size,parentNode){
-        var oText=document.createElement('h1');
-        oText.innerHTML=str;
-        oText.style.cssText=
-            //'color:skyblue;'+
-            'color:'+color+';'+//文字颜色
-            //'background:#aff;'+//背景颜色
-            'font-size:'+size+'px;'+//文字大小
-            //'width:60px;height:40px;'+//文本大小
-            'font-weight:normal;'+
-        //+'padding-top:50px;'//距离上一个对象的距离
-        'position:fixed;'+//到窗体的位置
-        'left:'+0+'px;'+//到部件左边距离
-        'top:'+0+'px;'; //到部件右边 距离
-        ;
-        parentNode.appendChild(oText);
-        return oText;
-    }
-}
-//var myTest=new Test();
+
+
+document.write("<script language=javascript src=test/UI.js></script>");
 var  myTestFilePath=[
     //"Template",
     "QEMSimplification",

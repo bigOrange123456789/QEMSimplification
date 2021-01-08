@@ -49,38 +49,76 @@ QEMSimplification.prototype = {
 
         //if(this.isSkirt(mesh, p1, p2,p3))return ;//如果该边位于网格边缘，不进行collapse
         //for(var )
+        var mid=[
+            (position.array[3 * p1    ] + position.array[3 * p2]) / 2,
+            (position.array[3 * p1 + 1] + position.array[3 * p2 + 1]) / 2,
+            (position.array[3 * p1 + 2] + position.array[3 * p2 + 2]) / 2
+        ];
+        var _p1=[
+            position.array[3 * p1],
+            position.array[3 * p1+1],
+            position.array[3 * p1+2]
+        ];
+        var _p2=[
+            position.array[3 * p2],
+            position.array[3 * p2+1],
+            position.array[3 * p2+2]
+        ];
         for(var i=0;i<position.count;i++)
-            if(isSameLocation(p1, p2, i)){
-                position.array[3 * i]
-                    = (position.array[3 * p1    ] + position.array[3 * p2]) / 2;
-                position.array[3 * i + 1]
-                    = (position.array[3 * p1 + 1] + position.array[3 * p2 + 1]) / 2;
-                position.array[3 * i + 2]
-                    = (position.array[3 * p1 + 2] + position.array[3 * p2 + 2]) / 2;
-
+            if(
+                isSameLocation(
+                    _p1,
+                    _p2,
+                    [position.array[3 * i],position.array[3 * i+1],position.array[3 * i+2]]
+                )
+            ){
+                position.array[3 * i] = mid[0];
+                position.array[3 * i + 1] = mid[1];
+                position.array[3 * i + 2] = mid[2];
             }
 
-        function isSameLocation(a, b, n) {//判断a,b两点是否至少有一个和n位置相同
-            if (position.array[3 * a] === position.array[3 * n]
-                && position.array[3 * a + 1] === position.array[3 * n + 1]
-                && position.array[3 * a + 2] === position.array[3 * n + 2])
+        function notTriangle(a, b, c) {//判断a,b两点是否至少有一个和n位置相同
+            if (position.array[3 * a] === position.array[3 * b]
+                && position.array[3 * a + 1] === position.array[3 * b + 1]
+                && position.array[3 * a + 2] === position.array[3 * b + 2])
                 return true;
-            if (position.array[3 * b] === position.array[3 * n]
-                && position.array[3 * b + 1] === position.array[3 * n + 1]
-                && position.array[3 * b + 2] === position.array[3 * n + 2])
+            if (position.array[3 * a] === position.array[3 * c]
+                && position.array[3 * a + 1] === position.array[3 * c + 1]
+                && position.array[3 * a + 2] === position.array[3 * c + 2])
+                return true;
+            if (position.array[3 * b] === position.array[3 * c]
+                && position.array[3 * b + 1] === position.array[3 * c + 1]
+                && position.array[3 * b + 2] === position.array[3 * c + 2])
                 return true
             return false;
+        }
+        function isSameLocation(a, b, n) {//判断a,b两点是否至少有一个和n位置相同
+            if (a[0] === n[0]
+                && a[1] === n[1]
+                && a[2] === n[2])
+                return true;
+            else if (b[0] === n[0]
+                && b[1] === n[1]
+                && b[2] === n[2])
+                return true
+            else return false;
         }
 
 
         for (var i = 0; i < index.count; i++)
-            if (index.array[i] === p1) index.array[i] = p2;
+            if (index.array[i] === p1) {
+                //index.array[i]
+                index.array[i] = p2;
+                //position.array[3 * index.array[i]    ]=mid[0];
+                //position.array[3 * index.array[i]+1  ]=mid[1];
+                //position.array[3 * index.array[i]+2  ]=mid[2];
+            }//index.array[i] = p2/**/
 
         var needDeleteTriangle = 0;
         for (var i = 0; i < index.count / 3; i = i + 3) {
-            if (index.array[i] === index.array[i + 1] ||
-                index.array[i] === index.array[i + 2] ||
-                index.array[i + 1] === index.array[i + 2])
+            if (
+                notTriangle(index.array[i], index.array[i+1], index.array[i+2])
+            )
                 needDeleteTriangle++;
         }
         //console.log(needDeleteTriangle);//有两个三角形需要删除
@@ -88,9 +126,9 @@ QEMSimplification.prototype = {
         var index2 = new THREE.InstancedBufferAttribute(new Uint16Array(index.count - needDeleteTriangle * 3), 1);//头部、上衣、裤子、动作
         var j = 0;
         for (var i = 0; i < index.count; i = i + 3)
-            if (!(index.array[i] === index.array[i + 1] ||
-                index.array[i] === index.array[i + 2] ||
-                index.array[i + 1] === index.array[i + 2])) {
+            if (
+                !notTriangle(index.array[i], index.array[i+1], index.array[i+2])
+            ) {
                 index2.array[j] = index.array[i];
                 index2.array[j + 1] = index.array[i + 1];
                 index2.array[j + 2] = index.array[i + 2];
@@ -257,7 +295,7 @@ QEMSimplification.prototype = {
     },
 
     //简化索引index
-    /*simplifyIndex:function (mesh) {
+    simplifyIndex:function (mesh) {
         var geometry=mesh.geometry;
         var attributes=geometry.attributes;
         var position=attributes.position;
@@ -274,5 +312,5 @@ QEMSimplification.prototype = {
                     break;//使得index指向第一个
                 }
         }
-    },*/
+    },
 }

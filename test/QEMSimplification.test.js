@@ -6,14 +6,21 @@ function InstancedGroupTest(myTest){
 
         this.myQEMSimplification;
         this.tag;
+        this.button_flag;
         this.referee;
 }
 InstancedGroupTest.prototype={
         setContext:function () {
-                this.myQEMSimplification=new QEMSimplification();
-
                 var nameContext="";
-                console.log('set context:'+nameContext);
+                console.log('set context:'+nameContext)
+                this.myQEMSimplification=new QEMSimplification();
+                this.referee=new Referee();
+                this.tag=new Text("","green",25);
+                this.button_flag=true;
+                var button=new Button("test","green",25);
+                button.addEvent(function () {
+                        scope.button_flag=!scope.button_flag;
+                });
                 var camera, scene, renderer;
                 var light;
                 init();
@@ -48,11 +55,20 @@ InstancedGroupTest.prototype={
         },
         //调整相机
         setContext2:function () {
+                var nameContext="";
+                console.log('set context:'+nameContext)
+                var scope=this;
                 this.myQEMSimplification=new QEMSimplification();
                 this.referee=new Referee();
-
-                var nameContext="";
-                console.log('set context:'+nameContext);
+                this.tag=new Text("","green",25);
+                this.button_flag=true;
+                var button=new Button("test","green",25);
+                button.reStr("暂停");
+                button.addEvent(function () {
+                        scope.button_flag=!scope.button_flag;
+                        if(scope.button_flag)button.reStr("暂停");
+                        else button.reStr("继续");
+                });
 
                 [this.scene, this.camera]=this.myTest.init();
 
@@ -60,7 +76,6 @@ InstancedGroupTest.prototype={
                 this.camera.position.y = 8;
 
                 new PlayerControl(this.camera);
-                this.tag=new Text("","green",25);
         },
         //每个点与自己的初始位置相差为判断条件--似乎没啥效果
         test1_1:function (contextType){
@@ -347,18 +362,16 @@ InstancedGroupTest.prototype={
                         var mesh=glb.scene.children[0];//index 顶点个数2004//前三个点为：0，1，2
                         var geometry=mesh.geometry;
                         var attributes=geometry.attributes;
-                        console.log(mesh.geometry.index.array.length/3)
-                        for(var k=0;k<60;k++){//1830//1731
-                                flag=false;
-                                while(!flag){
+                        console.log(geometry.index.count/3)
+                        window.setInterval((function(){
+                                if(geometry.index.count/3<300)return;
                                         var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
                                         flag=deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
-                                        console.log(mesh);
-                                        console.log(geometry);
-                                        console.log(attributes);
-                                }
+                                        //console.log(mesh);
+                                        scope.tag.reStr(geometry.index.count/3);
+                                        //console.log(attributes);
 
-                        }/**/
+                        }),100);
 
                         mesh.scale.set(10,10,10);
                         //deleteMeshTriangle(mesh);
@@ -374,12 +387,12 @@ InstancedGroupTest.prototype={
 
                         scope.scene.add(mesh);
                         function deleteMeshPoint(mesh,p1,p2){//将mesh中的p1点删除，对应为p2点
-                                var distance=
+                                /*var distance=
                                     Math.pow(mesh.geometry.attributes.position.array[3*p1]-mesh.geometry.attributes.position.array[3*p2],2)+
                                     Math.pow(mesh.geometry.attributes.position.array[3*p1+1]-mesh.geometry.attributes.position.array[3*p2+1],2)+
                                     Math.pow(mesh.geometry.attributes.position.array[3*p1+2]-mesh.geometry.attributes.position.array[3*p2+2],2);
-                                if(distance>0.005)return false;
-                                console.log(distance);
+                                if(distance>0.005)return false;*/
+                                //console.log(distance);
 
 
                                 mesh.geometry.attributes.position.array[3*p2]
@@ -495,7 +508,7 @@ InstancedGroupTest.prototype={
                         mesh.scale.set(4,4,4);
                         //mesh.position.set(-3500,0,0);
                         window.setInterval((function(){
-                                if(geometry.index.count/3<8000)return;
+                                if(geometry.index.count/3<3000)return;
                                 var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
                                 deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
                                 console.log("三角面的个数为："+geometry.index.count/3);
@@ -738,7 +751,7 @@ InstancedGroupTest.prototype={
                 //完成测试
         },
 
-        //制作了一个三角网格平面
+        //制作了一个无重点的三角网格平面
         test5:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -853,7 +866,7 @@ InstancedGroupTest.prototype={
 
                 //完成测试
         },
-        //对自制的三角网格平面使用了网格简化算法
+        //对自制的三角网格平面使用了网格简化算法//无重点、过程可视、有贴图
         test6:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -948,9 +961,9 @@ InstancedGroupTest.prototype={
 
                         scope.scene.add(glb.scene.children[1]);
 
-                        //flag=false;
+                        //flag=false;window.setInterval((function(){}),100);
                         window.setInterval((function(){
-                                //if(flag)return;
+                                if(!scope.button_flag)return;
                                 //if(!scope.myQEMSimplification.isSkirt(mesh,0,1,2))return;
                                 //if(mesh.geometry.index.array[0]=)
                                 //if(geometry.index.count/3<10000)return;
@@ -1211,6 +1224,208 @@ InstancedGroupTest.prototype={
                         scope.tag.reStr("三角面的个数:" + geometry.index.count / 3);
 
                         //}),100);/**/
+                });//
+
+                //完成测试
+        },
+        //对自制的三角网格平面使用了网格简化算法--线框图失败了
+        test6_4:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                this.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                this.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        //var material0=mesh.material;
+                        //mesh.material=new THREE.MeshBasicMaterial();
+                        //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+                        //mesh.material = new THREE.MeshStandardMaterial( { color: 0x00ffff, wireframe: true } );
+                        console.log(mesh.material);
+
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        var position=attributes.position;
+                        var index=geometry.index;
+                        //scope.myQEMSimplification.simplifyIndex(mesh);
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
+                        //console.log("position",position);
+                        //console.log("index",index);
+                        //console.log("初始三角面的个数:"+geometry.index.count/3);
+
+                        mesh.scale.set(20,20,20);
+
+                        //设置position
+                        var k=0;//生成100个点
+                        for(var i=-5.0;i<5.0;i+=1)
+                                for(var j=-5.0;j<5.0;j+=1){
+                                        position.array[3*k]=2*i;
+                                        position.array[3*k+1]=2*j;
+                                        position.array[3*k+2]=0.0;
+                                        k++;
+                                }
+                        //alert(k)
+                        //设置index
+
+                        var index2;
+                        my9_9_2();
+                        console.log("position",position);
+                        console.log("index2",index2);
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
+                        function my9_9_2(){
+                                index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
+                                k=0;
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k+2]=10*i+j;
+                                                index2.array[3*k+1]=10*i+(j+1);
+                                                index2.array[3*k  ]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*(i+1)+j;
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                geometry.index=index2;
+                        }
+
+
+                        scope.scene.add(glb.scene.children[1]);
+
+                        //flag=false;
+                        var mesh2=mesh.clone();
+                        //scope.scene.add(mesh2);
+                        window.setInterval((function(){
+                                //if(flag)return;
+                                //if(!scope.myQEMSimplification.isSkirt(mesh,0,1,2))return;
+                                //if(mesh.geometry.index.array[0]=)
+                                //if(geometry.index.count/3<10000)return;
+                                //console.log(mesh.geometry.index);
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,
+                                    mesh.geometry.index.array[rand*3],
+                                    mesh.geometry.index.array[rand*3+1],
+                                    mesh.geometry.index.array[rand*3+2]);
+                                scope.tag.reStr("三角面的个数:"+geometry.index.count/3);
+                                //mesh.material.visible=false;
+                                //mesh.material.visible=true;
+
+                                scope.scene.remove(mesh2);
+                                mesh2=mesh.clone();
+                                //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+                                scope.scene.add(mesh2);
+                                //mesh.material=material0;
+                                mesh.material=new THREE.MeshBasicMaterial({ color: 0x00ffff});
+                                //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+
+                        }),100);/**/
+                });//
+
+                //完成测试
+        },
+        //线框图、断言
+        test6_5:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                this.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                this.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        //var material0=mesh.material;
+                        //mesh.material=new THREE.MeshBasicMaterial();
+                        //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+                        //mesh.material = new THREE.MeshStandardMaterial( { color: 0x00ffff, wireframe: true } );
+                        console.log(mesh.material);
+
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        var position=attributes.position;
+                        var index=geometry.index;
+                        //scope.myQEMSimplification.simplifyIndex(mesh);
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
+                        //console.log("position",position);
+                        //console.log("index",index);
+                        //console.log("初始三角面的个数:"+geometry.index.count/3);
+
+                        mesh.scale.set(20,20,20);
+
+                        //设置position
+                        var k=0;//生成100个点
+                        for(var i=-5.0;i<5.0;i+=1)
+                                for(var j=-5.0;j<5.0;j+=1){
+                                        position.array[3*k]=2*i;
+                                        position.array[3*k+1]=2*j;
+                                        position.array[3*k+2]=0.0;
+                                        k++;
+                                }
+                        //alert(k)
+                        //设置index
+
+                        var index2;
+                        my9_9_2();
+                        console.log("position",position);
+                        console.log("index2",index2);
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
+                        function my9_9_2(){
+                                index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
+                                k=0;
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k+2]=10*i+j;
+                                                index2.array[3*k+1]=10*i+(j+1);
+                                                index2.array[3*k  ]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*(i+1)+j;
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                geometry.index=index2;
+                        }
+
+
+                        scope.scene.add(glb.scene.children[1]);
+
+                        //flag=false;
+                        //var mesh2=mesh.clone();
+
+                        scope.myQEMSimplification.deleteMeshPoint(mesh,
+                            55,
+                            56,
+                            66);
+                        scope.myQEMSimplification.deleteMeshPoint(mesh,
+                            0,
+                            1,
+                            11);/**/
+                        scope.tag.reStr("三角面的个数:" + geometry.index.count / 3);
+
+
+                        mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
+                        //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+
+                        //0、1两个点位置相同
+                        console.log(position);
+                        scope.referee.assertion(
+                            //[],[]
+                            [position.array[0],position.array[1],position.array[2]],
+                            [position.array[3],position.array[4],position.array[5]]
+                        );/**/
+
                 });//
 
                 //完成测试
@@ -1477,7 +1692,7 @@ InstancedGroupTest.prototype={
                         );
                 });//glb文件读取结束
         },
-        //测试deleteMeshPoint函数
+        //测试deleteMeshPoint函数//有纹理、断言
         test8_2:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -1544,47 +1759,200 @@ InstancedGroupTest.prototype={
 
                         scope.scene.add(glb.scene.children[1]);
 
-                        scope.myQEMSimplification.deleteMeshPoint(mesh,
-                            mesh.geometry.index.array[0],
-                            mesh.geometry.index.array[1],
-                            mesh.geometry.index.array[11]);
-                        scope.myQEMSimplification.deleteMeshPoint(mesh,
-                            mesh.geometry.index.array[1],
-                            mesh.geometry.index.array[2],
-                            mesh.geometry.index.array[12]);
-                        /*scope.myQEMSimplification.deleteMeshPoint(mesh,
-                            mesh.geometry.index.array[10],
-                            mesh.geometry.index.array[11],
-                            mesh.geometry.index.array[1]);*/
+                        //collapse三角面
+                        i=[55,0 ,1 ,2 ,3];
+                        j=[56,1 ,2 ,3 ,4];
+                        l=[66,11,12,13,14];
+                        for(k=0;k<i.length;k++)
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,
+                                    i[k], j[k], l[k]);
                         scope.tag.reStr("三角面的个数:" + geometry.index.count / 3);
 
 
-                        /*
-                        function isSameLocation(a, b, n) {//判断a,b两点是否至少有一个和n位置相同
-                                if (position.array[3 * a] === position.array[3 * n]
-                                    && position.array[3 * a + 1] === position.array[3 * n + 1]
-                                    && position.array[3 * a + 2] === position.array[3 * n + 2])
-                                        return true;
-                                if (position.array[3 * b] === position.array[3 * n]
-                                    && position.array[3 * b + 1] === position.array[3 * n + 1]
-                                    && position.array[3 * b + 2] === position.array[3 * n + 2])
-                                        return true
-                                return false;
+                        //断言测试
+                        i=[0  ,0,55,155];
+                        j=[100,1,56, 56];
+                        for(k=0;k<i.length;k++)
+                                scope.referee.assertion(
+                                    [position.array[3*i[k]],position.array[3*i[k]+1],position.array[3*i[k]+2]],
+                                    [position.array[3*j[k]],position.array[3*j[k]+1],position.array[3*j[k]+2]]
+                                );
+                });//glb文件读取结束
+        },
+        //测试deleteMeshPoint函数//线框图、断言
+        test8_3:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                this.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                this.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        var position=attributes.position;
+                        var index=geometry.index;
+                        //scope.myQEMSimplification.simplifyIndex(mesh);
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
+                        //console.log("position",position);
+                        //console.log("index",index);
+                        //console.log("初始三角面的个数:"+geometry.index.count/3);
+
+                        mesh.scale.set(20,20,20);
+
+                        //设置position
+                        var k=0;
+                        for(var n=0;n<2;n++)
+                            //生成两遍//每一遍生成100个点//共生成200个点
+                                for(var i=-5.0;i<5.0;i+=1)
+                                        for(var j=-5.0;j<5.0;j+=1){
+                                                position.array[3*k]=2*i;
+                                                position.array[3*k+1]=2*j;
+                                                position.array[3*k+2]=0.0;
+                                                k++;
+                                        }
+                        //alert(k)
+
+                        //设置index
+                        var index2;
+                        my9_9_2();
+                        console.log("position",position);
+                        console.log("index2",index2);
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
+                        function my9_9_2(){
+                                index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
+                                k=0;
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*i+(j+1);
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=100+10*i+j;
+                                                index2.array[3*k+1]=100+10*(i+1)+j;
+                                                index2.array[3*k+2]=100+10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                geometry.index=index2;
                         }
-                        //位置相同
+
+
+                        scope.scene.add(glb.scene.children[1]);
+
+                        i=[55,0 ,1 ,2 ,3];
+                        j=[56,1 ,2 ,3 ,4];
+                        l=[66,11,12,13,14];
+                        for(k=0;k<i.length;k++)
+                        scope.myQEMSimplification.deleteMeshPoint(mesh,
+                            i[k], j[k], l[k]);
+                        scope.tag.reStr("三角面的个数:" + geometry.index.count / 3);
+
+
+                        mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
+                        //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+
+                        console.log(position);
+
+                        //0、100两个点位置相同
+                        //0、1两个点位置相同
+                        i=[0  ,0,55,155];
+                        j=[100,1,56, 56];
+                        for(var k=0;k<i.length;k++)
                         scope.referee.assertion(
-                            isSameLocation(0,1,100),true
+                            [position.array[3*i[k]],position.array[3*i[k]+1],position.array[3*i[k]+2]],
+                            [position.array[3*j[k]],position.array[3*j[k]+1],position.array[3*j[k]+2]]
                         );
-                        scope.referee.assertion(
-                            isSameLocation(0,1,101),true
-                        );
-                        //位置不同
-                        scope.referee.assertion(
-                            isSameLocation(0,2,101),false
-                        );*/
+
+                });//glb文件读取结束
+        },
+        //测试deleteMeshPoint函数,过程可视
+        test9:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                this.camera.position.set(-0.9704513248250748,2.0665495844811432,28.947142621027023);
+                this.camera.rotation.set( -0.12261591349495268,-0.029774896077528493,-0.003668724751822147);
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        var position=attributes.position;
+                        var index=geometry.index;
+                        //scope.myQEMSimplification.simplifyIndex(mesh);
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
+                        //console.log("position",position);
+                        //console.log("index",index);
+                        //console.log("初始三角面的个数:"+geometry.index.count/3);
+
+                        mesh.scale.set(4,4,4);
+
+                        //设置position
+                        var k=0;
+                        for(var n=0;n<2;n++)
+                            //生成两遍//每一遍生成100个点//共生成200个点
+                                for(var i=-5.0;i<5.0;i+=1)
+                                        for(var j=-5.0;j<5.0;j+=1){
+                                                position.array[3*k]=2*i;
+                                                position.array[3*k+1]=2*j;
+                                                position.array[3*k+2]=0.0;
+                                                k++;
+                                        }
+                        //alert(k)
+
+                        //设置index
+                        var index2;
+                        my9_9_2();
+                        console.log("position",position);
+                        console.log("index2",index2);
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
+                        function my9_9_2(){
+                                index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
+                                k=0;
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*i+(j+1);
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=100+10*i+j;
+                                                index2.array[3*k+1]=100+10*(i+1)+j;
+                                                index2.array[3*k+2]=100+10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                geometry.index=index2;
+                        }
+
+
+                        scope.scene.add(glb.scene.children[1]);
+
+
+                        window.setInterval((function(){
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                console.log(mesh.geometry.index.array[rand*3+1]-mesh.geometry.index.array[rand*3]);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,
+                                    mesh.geometry.index.array[rand*3],
+                                    mesh.geometry.index.array[rand*3+1],
+                                    mesh.geometry.index.array[rand*3+2]);
+                                scope.tag.reStr("三角面的个数:"+geometry.index.count/3);
+
+                        }),100);
                 });//glb文件读取结束
         },
 }
 var myTest=new Test();
 var myInstancedGroupTest=new InstancedGroupTest(myTest);
-myInstancedGroupTest.test6_3();
+myInstancedGroupTest.test6();
