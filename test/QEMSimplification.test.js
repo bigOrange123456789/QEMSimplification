@@ -1333,7 +1333,7 @@ QEMSimplificationTest.prototype={
         //线框图、断言
         test6_5:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
-                var nameTest="直接坍塌的效果";
+                var nameTest="  test6_5  ";
                 console.log('start test:'+nameTest);
                 //开始测试
                 this.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
@@ -1418,13 +1418,16 @@ QEMSimplificationTest.prototype={
                         mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
                         //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
 
+
                         //0、1两个点位置相同
-                        console.log(position);
-                        scope.referee.assertion(
-                            //[],[]
-                            [position.array[0],position.array[1],position.array[2]],
-                            [position.array[3],position.array[4],position.array[5]]
-                        );/**/
+                        i=[0 ];
+                        j=[1 ];
+                        for(var k=0;k<i.length;k++)
+                                scope.referee.assertion(
+                                    [position.array[3*i[k]],position.array[3*i[k]+1],position.array[3*i[k]+2]],
+                                    [position.array[3*j[k]],position.array[3*j[k]+1],position.array[3*j[k]+2]],
+                                    nameTest+i[k]+"和"+j[k]+"两个点的坐标应该一致"
+                                );
 
                 });//
 
@@ -1782,7 +1785,7 @@ QEMSimplificationTest.prototype={
         //测试deleteMeshPoint函数//线框图、断言
         test8_3:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
-                var nameTest="直接坍塌的效果";
+                var nameTest="  test8_3  ";
                 console.log('start test:'+nameTest);
                 //开始测试
                 this.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
@@ -1867,7 +1870,8 @@ QEMSimplificationTest.prototype={
                         for(var k=0;k<i.length;k++)
                         scope.referee.assertion(
                             [position.array[3*i[k]],position.array[3*i[k]+1],position.array[3*i[k]+2]],
-                            [position.array[3*j[k]],position.array[3*j[k]+1],position.array[3*j[k]+2]]
+                            [position.array[3*j[k]],position.array[3*j[k]+1],position.array[3*j[k]+2]],
+                            nameTest+i[k]+"和"+j[k]+"两个点的坐标应该一致"
                         );
 
                 });//glb文件读取结束
@@ -1954,7 +1958,11 @@ QEMSimplificationTest.prototype={
         },
 
         main:function () {
-                this.test6();
+                //线框图、断言
+                //this.test6_5();
+                
+                //测试deleteMeshPoint函数//线框图、断言
+                //this.test8_3();
         },
 }
 var myQEMSimplificationTest=new QEMSimplificationTest(myTest);
