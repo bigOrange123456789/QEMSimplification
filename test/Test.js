@@ -37,10 +37,14 @@ Test.prototype={
         return new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 10000);
     },
     render:function (scene, camera) {
+        var preCanvas=document.getElementById("myCanvas");
+        if(preCanvas) preCanvas.parentNode.removeChild(preCanvas);
+
         var renderer = new THREE.WebGLRenderer();
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0xff00ff);
+
         document.body.appendChild( renderer.domElement );
         renderer.domElement.id="myCanvas"
         renderer.domElement.renderer=renderer;

@@ -1959,10 +1959,10 @@ QEMSimplificationTest.prototype={
 
         main:function () {
                 //线框图、断言
-                //this.test6_5();
-                
+                this.test6_5();
+
                 //测试deleteMeshPoint函数//线框图、断言
-                //this.test8_3();
+                this.test8_3();
         },
 }
 var myQEMSimplificationTest=new QEMSimplificationTest(myTest);
