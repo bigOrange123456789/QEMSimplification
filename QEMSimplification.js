@@ -138,12 +138,10 @@ QEMSimplification.prototype = {
 
         return true;
     },
-    deleteMeshPoint_Test1: function (mesh) {//将mesh中的p1点删除，对应为p2点
-        var p1=2;
-        var p2=3;
+    deleteMeshPoint_Test1: function (mesh) {//将mesh中的p1点删除，对应为p2点//var p1=2;var p2=3;
         var geometry=mesh.geometry;
         var attributes=geometry.attributes;
-        var position=attributes.position;
+        var position=attributes.position;//对于可视化操作似乎：只修改了index,而没有修改position
         var index = mesh.geometry.index;
 
         //if(this.isSkirt(mesh, p1, p2,p3))return ;//如果该边位于网格边缘，不进行collapse
@@ -159,19 +157,27 @@ QEMSimplification.prototype = {
         ];
         for(var is=[2,3,102,103],i=0;i<4;i++)
             {
-                position.array[3 * is[i]] = mid[0];
-                position.array[3 * is[i] + 1] = mid[1];
-                position.array[3 * is[i] + 2] = mid[2];
+                mesh.geometry.attributes.position.array[3 * is[i]] = mid[0];
+                mesh.geometry.attributes.position.array[3 * is[i] + 1] = mid[1];
+                mesh.geometry.attributes.position.array[3 * is[i] + 2] = mid[2];
             }
 
+        /*console.log(//2
+            mesh.geometry.attributes.position.array[3 * 2+1],
+            mesh.geometry.attributes.position.array[3 * 3+1],
+            mesh.geometry.attributes.position.array[3 * 102+1],
+            mesh.geometry.attributes.position.array[3 * 103+1],
+        );*/
 
-        for (var i = 0; i < index.count; i++)
+        /*for (var i = 0; i < index.count; i++)
             if (index.array[i] === 2) {
                 //index.array[i] = 3;//这里似乎对过程不可见的无影响，可见的有影响
-            }//index.array[i] = p2/**/
+            }//index.array[i] = p2*/
 
         //如果一个三角形点有重合，则删除这个三角形
         var index2 = new THREE.InstancedBufferAttribute(new Uint16Array(index.count - 3), 1);//头部、上衣、裤子、动作
+        var position2 = new THREE.InstancedBufferAttribute(new Float32Array(position.count*3),3);//头部、上衣、裤子、动作
+
         var j = 0;
         for (var i = 0; i < index.count; i = i + 3)
             if (
@@ -184,6 +190,18 @@ QEMSimplification.prototype = {
             }
         mesh.geometry.index = index2;
 
+        for(i=0;i<position2.count;i++){
+            position2.array[3*i]=position.array[3*i];
+            position2.array[3*i+1]=position.array[3*i+1];
+            position2.array[3*i+2]=position.array[3*i+2];
+            console.log(
+                position2.array[3*i],
+                position2.array[3*i+1],
+                position2.array[3*i+2]
+            );
+        }
+        console.log(11);
+        //mesh.geometry.attributes.position=position2;
         return true;
     },
     updateIndex: function (mesh) {

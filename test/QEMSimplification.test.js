@@ -610,7 +610,7 @@ QEMSimplificationTest.prototype={
 
                 //完成测试
         },
-        //过程不可见
+        //赵院士模型collapse,过程不可见
         test4_1:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -636,14 +636,48 @@ QEMSimplificationTest.prototype={
                         scope.scene.add(glb.scene.children[1]);
 
                         //for(var k=0;k<5000;k++){//1830//1731//
-                        while(geometry.index.count/3>8000){
+                        while(geometry.index.count/3>10000){
                                 var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
                                 this.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
                                 //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
                                 scope.tag.reStr("三角面的个数为："+geometry.index.count/3);
                         }//15598//13306
+                });//
 
+                //完成测试
+        },
+        //赵院士模型collapse,尝试使得过程可见--未成功
+        test4_1_1:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        console.log(glb)
+                        //console.log(glb.scene.children[0]);//scene.children[1].children[3]
+                        //scene.children[1].children[2].children[0]
+                        //scene.children[1].children[3]
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+                        //console.log(mesh.geometry.index.array.length/3)
+                        console.log("初始三角面的个数为："+geometry.index.count/3);//16204
 
+                        mesh.scale.set(4,4,4);
+                        scope.scene.add(glb.scene.children[1]);
+
+                        //for(var k=0;k<5000;k++){//1830//1731//
+                        while(geometry.index.count/3>10000){
+                                var rand=Math.floor(Math.random()*mesh.geometry.index.array.length/3);
+                                this.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                scope.tag.reStr("三角面的个数为："+geometry.index.count/3);
+                        }//15598//13306
                 });//
 
                 //完成测试
@@ -2043,6 +2077,12 @@ QEMSimplificationTest.prototype={
                                     mesh
                                 );
                         }
+                        function wireFrame(){
+                                mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});//mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+                                scope.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                                scope.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                                mesh.scale.set(20,20,20);
+                        }
                         function myTest1(rand) {
                                 scope.myQEMSimplification.deleteMeshPoint(
                                     mesh,
@@ -2060,10 +2100,31 @@ QEMSimplificationTest.prototype={
                                 );
                         }
                         //for(i=0;i<30;i++)myTest(i);
-                        //myTest();//
+
+                        console.log(//2
+                            mesh.geometry.attributes.position.array[3 * 2+1],
+                            mesh.geometry.attributes.position.array[3 * 3+1],
+                            mesh.geometry.attributes.position.array[3 * 102+1],
+                            mesh.geometry.attributes.position.array[3 * 103+1],
+                        );
+
+                        mesh.geometry.attributes.position.array[3 * 103]=-11
+
+                        console.log(mesh.geometry.attributes.position.array[3 * 102])
+                        //myTest();wireFrame();
+
                         window.setTimeout((function () {
-                                myTest()//
+                                myTest();//wireFrame();
                         }), 0);
+                        window.setTimeout((function () {
+                                console.log(//2
+                                    mesh.geometry.attributes.position.array[3 * 2+1],
+                                    mesh.geometry.attributes.position.array[3 * 3+1],
+                                    mesh.geometry.attributes.position.array[3 * 102+1],
+                                    mesh.geometry.attributes.position.array[3 * 103+1],
+                                )
+                                mesh.position.x+=1.15;
+                        }), 1000);/**/
                 });//glb文件读取结束
         },
         //测试deleteMeshPoint函数,过程不可视
@@ -2150,7 +2211,11 @@ QEMSimplificationTest.prototype={
         main:function () {
                 //赵院士模型collapse,过程不可见
                 //this.test4_1();
+                //赵院士模型collapse,过程可见--未成功
+                //this.test4_1_1();
 
+                //无重点、过程可视、有贴图
+                this.test6();
                 //无重点、线框图、断言
                 //this.test6_5();
 
@@ -2158,7 +2223,7 @@ QEMSimplificationTest.prototype={
                 //this.test8_3();
 
                 //测试deleteMeshPoint函数//线框图、断言//尝试找出过程可视化中的错误
-                this.test9();
+                //this.test9();
                 //测试deleteMeshPoint函数,过程不可视
                 //this.test9_1();
         },
