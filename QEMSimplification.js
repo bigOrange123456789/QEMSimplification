@@ -1,20 +1,109 @@
 function QEMSimplification(){
 }
 QEMSimplification.prototype = {
+    //判断一个点是否为边缘点
+    isEdgePoint:function (mesh,p){//p的邻接边存在非共用边
+        var geometry = mesh.geometry;
+        var attributes = geometry.attributes;
+        var position = attributes.position;
+        var index = mesh.geometry.index;
+        for (var i = 0; i < index.count ; i = i + 3) {
+            var array=containPos(index.array[i], index.array[i + 1], index.array[i + 2],p);
+            if(array.length>0){
+                //console.log(array,this.isCommonEdge2(mesh,array[0],p),this.isCommonEdge2(mesh,array[1],p));
+                if(!this.isCommonEdge2(mesh,array[0],p))return true;
+                if(!this.isCommonEdge2(mesh,array[1],p))return true;
+            }
+        }
+        return false;
+
+        function containPos(a,b,c,p){//三角形中包含点p
+            if(positionSimilar(a,p))return [b,c];
+            else if(positionSimilar(b,p))return [a,c];
+            else if(positionSimilar(c,p))return [a,b];
+            else return [];
+        }
+        function positionSimilar(v1, v2) {
+            if (
+                position.array[3 * v1] === position.array[3 * v2] &&
+                position.array[3 * v1 + 1] === position.array[3 * v2 + 1] &&
+                position.array[3 * v1 + 2] === position.array[3 * v2 + 2]
+            ) return true;
+            else return false;
+        }
+    },
+    //判断一个三角形是否为边缘三角形
+    isEdgeTriangle:function (mesh,p1,p2,p3){//判断三条边是否都是公有边//p1,p2,p3是index的值
+        var geometry=mesh.geometry;//console.log(p1,p2,p3);//11 12 22//不是边缘三角形，应该返回false
+        var attributes=geometry.attributes;
+        var position=attributes.position;
+        var index = mesh.geometry.index;
+
+        if(this.isCommonEdge2(mesh,p1,p2)&&
+            this.isCommonEdge2(mesh,p1,p3)&&
+            this.isCommonEdge2(mesh,p2,p3))
+            return false;//全是公共边
+        else return true;//至少一条不是公共边
+
+
+    },
+    //判断一个边是否为共用边
+    isCommonEdge2: function (mesh, pa, pb) {
+        var geometry = mesh.geometry;
+        var attributes = geometry.attributes;
+        var position = attributes.position;
+        var index = mesh.geometry.index;
+        /*console.log(index, pa, pb);
+        console.log(246,247,248,
+            index.array[246], index.array[246 + 1], index.array[246 + 2],
+            equalDouble(index.array[246], index.array[246 + 1], index.array[246 + 2], pa, pb)
+            );*/
+        var n = 0;
+        for (var i = 0; i < index.count ; i = i + 3)
+            if (equalDouble(index.array[i], index.array[i + 1], index.array[i + 2], pa, pb)) {
+                //console.log(index.array[i], index.array[i + 1], index.array[i + 2], pa, pb);
+                n++;
+                if (n > 1) return true;
+            }
+        return false;
+
+        function equalDouble(v1, v2, v3, a, b) {//三角形中有边ab//三角形中有点a和点b
+            if (equal(v1, v2, v3, a) && equal(v1, v2, v3, b)) return true;
+            else return false;
+        }
+
+        function equal(v1, v2, v3, a) {//三角形中有一个顶点和a位置相同
+            if (positionSimilar(v1, a) || positionSimilar(v2, a) || positionSimilar(v3, a)) return true;
+            else return false;
+        }
+
+        function positionSimilar(v1, v2) {
+            if (
+                position.array[3 * v1] === position.array[3 * v2] &&
+                position.array[3 * v1 + 1] === position.array[3 * v2 + 1] &&
+                position.array[3 * v1 + 2] === position.array[3 * v2 + 2]
+            ) return true;
+            else return false;
+        }
+    },
     //根据到相邻三角面的距离和
     findSuitablePoint2: function (mesh) {
 
         var geometry=mesh.geometry;
         var index = geometry.index;
 
-        var pos0=[index.array[0],index.array[1]];
-        var distance0=this.computeError(mesh,pos0[0],pos0[1]);
-        for (var i = 1; i < index.count / 3; i = i + 3){
-            var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
-            if(myDistance<distance0){
-                distance0=myDistance;
-                pos0=[index.array[i],index.array[i+1]];
+        var pos0=[]//[index.array[0],index.array[1]];
+        var distance0=99999999999;//this.computeError(mesh,pos0[0],pos0[1]);
+        for (var i = 0; i < index.count / 3; i = i + 3){
+            if(!this.isEdgePoint(mesh,index.array[i])&&!this.isEdgePoint(mesh,index.array[i+1])) {
+                var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
+                if(myDistance<distance0){
+                    distance0=myDistance;
+                    pos0=[index.array[i],index.array[i+1]];
+                }
+
             }
+
         }
         return pos0;
     },
