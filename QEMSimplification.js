@@ -1,7 +1,7 @@
 function QEMSimplification(){
 }
 QEMSimplification.prototype = {
-    //判断一个点是否为边缘点
+    //判断一个点是否为边缘点//Skirt
     isEdgePoint:function (mesh,p){//p的邻接边存在非共用边
         var geometry = mesh.geometry;
         var attributes = geometry.attributes;
@@ -97,6 +97,7 @@ QEMSimplification.prototype = {
         for (var i = 0; i < index.count / 3; i = i + 3){
             if(!this.isEdgePoint(mesh,index.array[i])&&!this.isEdgePoint(mesh,index.array[i+1])) {
                 var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
+                //console.log(index.array[i]+","+index.array[i+1],myDistance);
                 if(myDistance<distance0){
                     distance0=myDistance;
                     pos0=[index.array[i],index.array[i+1]];
@@ -130,6 +131,8 @@ QEMSimplification.prototype = {
         }
         return pos0;
     },
+
+
     deleteMeshPoint: function (mesh, p1, p2,p3) {//将mesh中的p1点删除，对应为p2点
         var geometry=mesh.geometry;
         var attributes=geometry.attributes;
@@ -466,9 +469,21 @@ QEMSimplification.prototype = {
         */
         var geometry=mesh.geometry;
         var index = geometry.index;
-        for (var i = 1; i < index.count / 3; i = i + 3){
-            if(index[i]===p||index[i+1]===p||index[i+2]===p){
-                var i0=index[i],i1=index[i+1],i2=index[i+2];
+        var attributes=geometry.attributes;
+        var position=attributes.position;
+        /*console.log(index,p);
+        for (var i = 0; i < index.count ; i = i + 3){
+            if(index.array[i]===p||index.array[i+1]===p||index.array[i+2]===p){
+                console.log("*");
+            }
+        }*/
+        for (var i = 0; i < index.count ; i = i + 3){
+            if(
+                positionSimilar(index.array[i], p)||
+                positionSimilar(index.array[i+1], p)||
+                positionSimilar(index.array[i+2], p)
+            ){
+                var i0=index.array[i],i1=index.array[i+1],i2=index.array[i+2];
                 var pos0=[
                     geometry.attributes.position.array[3 * i0],
                     geometry.attributes.position.array[3 * i0+1],
@@ -484,6 +499,7 @@ QEMSimplification.prototype = {
                     geometry.attributes.position.array[3 * i2+1],
                     geometry.attributes.position.array[3 * i2+2],
                 ];
+                /*console.log(pos1,pos2);
                 var A=pos1[1]*pos2[2]-pos1[2]*pos2[1];
                 var B=pos1[2]*pos2[0]-pos1[0]*pos2[2];
                 var C=pos1[0]*pos2[1]-pos1[1]*pos2[0];
@@ -494,6 +510,15 @@ QEMSimplification.prototype = {
                 B/=x;
                 C/=x;
                 var D=-A*pos0[0]-B*pos0[1]-C*pos0[2];
+                console.log(A,B,C,D);
+                console.log(A*pos1[0]+B*pos1[1]+C*pos1[2]+D);
+                console.log(A*pos2[0]+B*pos2[1]+C*pos2[2]+D);*/
+                var A,B,C,D;
+                [A,B,C,D]=computePlane(pos0,pos1,pos2);
+                /*console.log(A,B,C,D);
+                console.log(A*pos0[0]+B*pos0[1]+C*pos0[2]+D);
+                console.log(A*pos1[0]+B*pos1[1]+C*pos1[2]+D);
+                console.log(A*pos2[0]+B*pos2[1]+C*pos2[2]+D);*/
 
                 errorMatrix=[
                     errorMatrix[ 0]+A*A,errorMatrix[ 1]+A*B,errorMatrix[ 2]+A*C,errorMatrix[ 3]+A*D,
@@ -504,38 +529,30 @@ QEMSimplification.prototype = {
             }
         }
         return errorMatrix;
-    },
 
-    //判断p1、p2、p3这个三角形是否为边缘三角形
-    isSkirt: function (mesh, p1,p2,p3) {
-        return this.isCommonEdge(mesh, p1,p2)||
-            this.isCommonEdge(mesh, p1,p3)||
-            this.isCommonEdge(mesh, p2,p3);
-    },
-    //判断p1、p2这条边是否为两个三角形共用
-    isCommonEdge: function (mesh, p1, p2) {//p1,p2两点构成一条边//
-        var geometry=mesh.geometry;
-        var index = geometry.index;
-        var flag_triangle=0;
-        //console.log(index.count / 3);
-        for (i = 0; i < index.count ; i+=3){
-            var flag_pos=0;
-            if(index.array[i]===p1||index.array[i]===p2)flag_pos++;
-            if(index.array[i+1]===p1||index.array[i+1]===p2)flag_pos++;
-            if(index.array[i+2]===p1||index.array[i+2]===p2)flag_pos++;
-            //console.log(index.array[i],index.array[i+1],index.array[i+2]);
-            if(flag_pos>=2){
-                //console.log("*");
-                flag_triangle++;
-                if(flag_triangle>=2){
-                    //alert("在网格内部");
-                    return false;//使用该边的三角形至少两个//在网格内部
-                }
-            }
+        function computePlane(p0,p1,p2){
+            var a=(p1[1]-p0[1])*(p2[2]-p0[2])-(p1[2]-p0[2])*(p2[1]-p0[1]);
+            var b=(p1[2]-p0[2])*(p2[0]-p0[0])-(p1[0]-p0[0])*(p2[2]-p0[2]);
+            var c=(p1[0]-p0[0])*(p2[1]-p0[1])-(p1[1]-p0[1])*(p2[0]-p0[0]);
+            var x=Math.pow((
+                Math.pow(a,2)+Math.pow(b,2)+Math.pow(c,2)
+            ),0.5);
+            a/=x;
+            b/=x;
+            c/=x;
+            var d=-a*p0[0]-b*p0[1]-c*p0[2];
+            return [a,b,c,d];
         }
-
-        return true;//使用该边的三角形少于两个//在网格边缘
+        function positionSimilar(v1, v2) {
+            if (
+                position.array[3 * v1] === position.array[3 * v2] &&
+                position.array[3 * v1 + 1] === position.array[3 * v2 + 1] &&
+                position.array[3 * v1 + 2] === position.array[3 * v2 + 2]
+            ) return true;
+            else return false;
+        }
     },
+
 
     //简化索引index
     simplifyIndex:function (mesh) {

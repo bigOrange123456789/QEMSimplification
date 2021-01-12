@@ -635,7 +635,7 @@ QEMSimplificationTest.prototype={
 
                 //完成测试
         },
-        //赵院士模型collapse,过程不可见
+        //赵院士模型collapse,过程不可见//随机删除
         test4_1:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="直接坍塌的效果";
@@ -666,6 +666,44 @@ QEMSimplificationTest.prototype={
                                 this.myQEMSimplification.deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
                                 //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
                                 scope.tag.reStr("三角面的个数为："+geometry.index.count/3);
+                        }//15598//13306
+                });//
+
+                //完成测试
+        },
+        //赵院士模型collapse,过程不可见//QEM删除
+        test4_1_0:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        console.log(glb)
+                        //console.log(glb.scene.children[0]);//scene.children[1].children[3]
+                        //scene.children[1].children[2].children[0]
+                        //scene.children[1].children[3]
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+                        //console.log(mesh.geometry.index.array.length/3)
+                        console.log("初始三角面的个数为："+geometry.index.count/3);//16204
+
+                        mesh.scale.set(4,4,4);
+                        scope.scene.add(glb.scene.children[1]);
+
+                        for(var k=0;k<1;k++){//1830//1731//
+                        //while(geometry.index.count/3>10000){
+                                var arrays=scope.myQEMSimplification.findSuitablePoint2(mesh);
+                                console.log(arrays);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,arrays[0],arrays[1]);
+                                //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                scope.tag.reStr("三角面的个数为："+geometry.index.count/3);
+                                console.log("三角面的个数为："+geometry.index.count/3);
                         }//15598//13306
                 });//
 
@@ -2157,7 +2195,7 @@ QEMSimplificationTest.prototype={
 
                 });//glb文件读取结束
         },
-        //测试findSuitablePoint2--(根据到相邻三角面的距离和)函数//线框图、断言--失败
+        //测试findSuitablePoint2--(根据到相邻三角面的距离和)函数//线框图--大致成功了
         test8_3_1:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="  test8_3  ";
@@ -2191,8 +2229,8 @@ QEMSimplificationTest.prototype={
                                                 position.array[3*k]=2*i;
                                                 position.array[3*k+1]=2*j;
                                                 position.array[3*k+2]=0.0;
-                                                //if(i===-4.0)position.array[3*k+2]=0.5;
-                                                //if(i===-5.0)position.array[3*k+2]=0.5;
+                                                if(j===-4.0)position.array[3*k+2]=0.5;
+                                                //if(i===-5.0)position.array[3*k+2]=2.5;
                                                 k++;
                                         }
                         //alert(k)
@@ -2226,7 +2264,7 @@ QEMSimplificationTest.prototype={
 
                         scope.scene.add(glb.scene.children[1]);
 
-                        for(i=0;i<4;i++){
+                        for(i=0;i<1;i++){
                                 var pos0=scope.myQEMSimplification.findSuitablePoint2(mesh);
                                 console.log(pos0);
                                 scope.myQEMSimplification.deleteMeshPoint(mesh, pos0[0],pos0[1], 10);
@@ -2588,7 +2626,7 @@ QEMSimplificationTest.prototype={
 
                 });//glb文件读取结束
         },
-        //测试computeError函数//线框图、断言
+        //测试computeError函数//线框图、断言--大致成功了
         test8_3_1_1_2:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
                 var nameTest="  test8_3  ";
@@ -2630,8 +2668,6 @@ QEMSimplificationTest.prototype={
                         //设置index
                         var index2;
                         my9_9_2();
-                        console.log("position",position);
-                        console.log("index2",index2);
                         console.log("初始三角面的个数:"+geometry.index.count/3);
                         function my9_9_2(){
                                 index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
@@ -2656,12 +2692,7 @@ QEMSimplificationTest.prototype={
 
                         scope.scene.add(glb.scene.children[1]);
 
-                        console.log(//11 12 22
-                            0,1,"should is 0",scope.myQEMSimplification.computeError(mesh,0,1)
-                        );
-                        console.log(
-                            0,10,"should is not 0",scope.myQEMSimplification.computeError(mesh,0,10)
-                        );
+
                         /*console.log(
                             0,10,"isCommonEdge is false",scope.myQEMSimplification.isCommonEdge2(mesh,0,10)
                         );*/
@@ -2680,23 +2711,31 @@ QEMSimplificationTest.prototype={
                         mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
                         //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
 
-                        console.log(position);
 
-                        /*//断言
-                        i=[0,1];
+                        //断言
+                        console.log(//11 12 22
+                            0,1,"should is 0",scope.myQEMSimplification.computeError(mesh,0,1)
+                        );/**/
+                        console.log(
+                            0,10,"should is not 0",scope.myQEMSimplification.computeError(mesh,0,10)
+                        );
+                        i=[0,33];
+                        j=[1,22];
                         for(var k=0;k<i.length;k++)
                                 scope.referee.assertion(
-                                    scope.myQEMSimplification.isEdgePoint(mesh,i[k]),
+                                    scope.myQEMSimplification.computeError(mesh,i[k],j[k])===0,
                                     true,
-                                    nameTest+i[k]+"是边缘点"
+                                    nameTest+i[k]+","+j[k]+"误差应该是0"
+                                );
+                        i=[0 ,0,10];
+                        j=[10,11,20];
+                        for(var k=0;k<i.length;k++)
+                                scope.referee.assertion(
+                                    scope.myQEMSimplification.computeError(mesh,i[k],j[k])===0,
+                                    false,
+                                    nameTest+i[k]+","+j[k]+"误差应该不是0"
                                 );
                         i=[22,33];
-                        for(var k=0;k<i.length;k++)
-                                scope.referee.assertion(
-                                    scope.myQEMSimplification.isEdgePoint(mesh,i[k]),
-                                    false,
-                                    nameTest+i[k]+","+j[k]+"不是边缘点"
-                                );*/
 
                 });//glb文件读取结束
         },
@@ -2956,7 +2995,7 @@ QEMSimplificationTest.prototype={
                 //重点、线框图、断言
                 //if(typeof(urlType)=== "undefined")this.test8();
                 //测试findSuitablePoint2函数//线框图、断言
-                if(typeof(urlType)=== "undefined")this.test8_3_1_1_2();
+                if(typeof(urlType)=== "undefined")this.test4_1_0();
         },
 }
 var myQEMSimplificationTest=new QEMSimplificationTest(myTest);
