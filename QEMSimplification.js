@@ -1,4 +1,5 @@
 function QEMSimplification(){
+    this.errors=null;//长度为三角形的个数
 }
 QEMSimplification.prototype = {
     //判断一个点是否为边缘点//Skirt
@@ -108,6 +109,41 @@ QEMSimplification.prototype = {
         }
         return pos0;
     },
+    //根据到相邻三角面的距离和--采用了更为快捷的算法
+    findSuitablePoint3: function (mesh) {
+
+        var geometry=mesh.geometry;
+        var index = geometry.index;
+
+        if(this.errors===null){//初始化errors
+            for (var i = 0; i < index.count / 3; i = i + 3){
+                var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
+                this.errors.push(myDistance);
+            }
+        }
+
+
+        var pos0=[]//[index.array[0],index.array[1]];
+        var distance0=99999999999;//this.computeError(mesh,pos0[0],pos0[1]);
+
+        for (var i = 0; i < index.count / 3; i = i + 3){
+            if(!this.isEdgePoint(mesh,index.array[i])&&!this.isEdgePoint(mesh,index.array[i+1])) {
+                //if(this.errors)
+                myDistance=this.errors[i/3];//this.computeError(mesh,index.array[i],index.array[i+1]);
+                //console.log(index.array[i]+","+index.array[i+1],myDistance);
+                if(myDistance<distance0){
+                    distance0=myDistance;
+                    pos0=[index.array[i],index.array[i+1]];
+                }
+
+            }
+
+        }
+
+
+        return pos0;
+
+    },
     //根据两点之间的距离
     findSuitablePoint: function (mesh) {
         function getDistance(p1,p2){//获取两个点的距离//p1,p2都是position的下标，即index的值
@@ -211,7 +247,11 @@ QEMSimplification.prototype = {
             if (
                 notTriangle(index.array[i], index.array[i+1], index.array[i+2])
             )
+            {
+                if(this.errors)this.errors.splice(i/3-needDeleteTriangle,1);//删除this.errors
+                else console.log("this.errors is null!");
                 needDeleteTriangle++;
+            }
         }
         //console.log(needDeleteTriangle);//有两个三角形需要删除
         //如果一个三角形点有重合，则删除这个三角形
@@ -228,6 +268,26 @@ QEMSimplification.prototype = {
             }
         mesh.geometry.index = index2;
 
+        for (i = 0; i < index.count / 3; i = i + 3)
+            if(
+                positionSimilar(index2.array[i]   , p1)||
+                positionSimilar(index2.array[i+1] , p1)||
+                positionSimilar(index2.array[i+2] , p1)||
+                positionSimilar(index2.array[i]   , p2)||
+                positionSimilar(index2.array[i+1] , p2)||
+                positionSimilar(index2.array[i+2] , p2)
+            ){
+            var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
+            this.errors[i/3](myDistance);
+        }
+        function positionSimilar(v1, v2) {
+            if (
+                position.array[3 * v1] === position.array[3 * v2] &&
+                position.array[3 * v1 + 1] === position.array[3 * v2 + 1] &&
+                position.array[3 * v1 + 2] === position.array[3 * v2 + 2]
+            ) return true;
+            else return false;
+        }
         return true;
     },
     deleteMeshPoint_: function (mesh, p1, p2,p3) {//将mesh中的p1点删除，对应为p2点
