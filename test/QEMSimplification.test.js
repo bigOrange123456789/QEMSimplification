@@ -709,6 +709,44 @@ QEMSimplificationTest.prototype={
 
                 //完成测试
         },
+        //赵院士模型collapse,过程不可见//QEM删除,更快捷的算法
+        test4_1_00:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="直接坍塌的效果";
+                console.log('start test:'+nameTest);
+                //开始测试
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        console.log(glb)
+                        //console.log(glb.scene.children[0]);//scene.children[1].children[3]
+                        //scene.children[1].children[2].children[0]
+                        //scene.children[1].children[3]
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        console.log(mesh);
+                        console.log(geometry);//index 48612
+                        console.log(attributes);
+                        //console.log(mesh.geometry.index.array.length/3)
+                        console.log("初始三角面的个数为："+geometry.index.count/3);//16204
+
+                        mesh.scale.set(4,4,4);
+                        scope.scene.add(glb.scene.children[1]);
+
+                        //for(var k=0;k<100;k++){//1830//1731//
+                        while(geometry.index.count/3>5000){
+                                var arrays=scope.myQEMSimplification.findSuitablePoint3(mesh);
+                                console.log(arrays);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,arrays[0],arrays[1]);
+                                //deleteMeshPoint(mesh,mesh.geometry.index.array[rand*3],mesh.geometry.index.array[rand*3+1]);
+                                scope.tag.reStr("三角面的个数为："+geometry.index.count/3);
+                                console.log("三角面的个数为："+geometry.index.count/3);
+                        }//15598//13306
+                });//
+
+                //完成测试
+        },
         //赵院士模型collapse,尝试使得过程可见--未成功
         test4_1_1:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext3();
@@ -2739,6 +2777,108 @@ QEMSimplificationTest.prototype={
 
                 });//glb文件读取结束
         },
+        //测试findSuitablePoint3--(根据到相邻三角面的距离和)函数//线框图--大致成功了
+        test8_3_2:function (contextType){
+                if(typeof(contextType)==="undefined")this.setContext2();
+                var nameTest="  test8_3  ";
+                console.log('start test:'+nameTest);
+                //开始测试
+                this.camera.position.set(-10.737996622084946,8.164451805696736,-0.3249246182617435);
+                this.camera.rotation.set(-1.799047718201149,-1.552220604283645,-1.7990857496759487);
+                var scope=this;
+                var loader= new THREE.GLTFLoader();
+                loader.load("zhao.glb", (glb) => {
+                        var mesh=glb.scene.children[1].children[3];//index 顶点个数2004//前三个点为：0，1，2
+                        var geometry=mesh.geometry;
+                        var attributes=geometry.attributes;
+                        var position=attributes.position;
+                        var index=geometry.index;
+                        //scope.myQEMSimplification.simplifyIndex(mesh);
+                        for(var i=0;i<2;i++)//移除其它mesh//主要是移除牙齿网格
+                                glb.scene.children[1].children[2].children[0].parent.remove(glb.scene.children[1].children[2].children[0]);
+                        //console.log("position",position);
+                        //console.log("index",index);
+                        //console.log("初始三角面的个数:"+geometry.index.count/3);
+
+                        mesh.scale.set(20,20,20);
+
+                        //设置position
+                        var k=0;
+                        for(var n=0;n<2;n++)
+                            //生成两遍//每一遍生成100个点//共生成200个点
+                                for(var i=-5.0;i<5.0;i+=1)
+                                        for(var j=-5.0;j<5.0;j+=1){
+                                                position.array[3*k]=2*i;
+                                                position.array[3*k+1]=2*j;
+                                                position.array[3*k+2]=0.0;
+                                                if(j===-4.0)position.array[3*k+2]=0.5;
+                                                //if(i===-5.0)position.array[3*k+2]=2.5;
+                                                k++;
+                                        }
+                        //alert(k)
+
+                        //设置index
+                        var index2;
+                        my9_9_2();
+                        console.log("position",position);
+                        console.log("index2",index2);
+                        console.log("初始三角面的个数:"+geometry.index.count/3);
+                        function my9_9_2(){
+                                index2 = new THREE.InstancedBufferAttribute(new Uint16Array(2*9*9*3), 1);
+                                k=0;
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=10*i+j;
+                                                index2.array[3*k+1]=10*i+(j+1);
+                                                index2.array[3*k+2]=10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                for(i=0;i<9;i++)
+                                        for(j=0;j<9;j++){
+                                                index2.array[3*k  ]=100+10*i+j;
+                                                index2.array[3*k+1]=100+10*(i+1)+j;
+                                                index2.array[3*k+2]=100+10*(i+1)+(j+1);
+                                                k++;
+                                        }
+                                geometry.index=index2;
+                        }
+
+
+                        scope.scene.add(glb.scene.children[1]);
+
+                        for(i=0;i<2;i++){
+                                var pos0=scope.myQEMSimplification.findSuitablePoint3(mesh);
+                                console.log(pos0);
+                                scope.myQEMSimplification.deleteMeshPoint(mesh, pos0[0],pos0[1], 10);
+                        }
+
+                        /*i=[55,0 ,1 ,2 ,3];
+                        j=[56,1 ,2 ,3 ,4];
+                        l=[66,11,12,13,14];
+                        for(k=0;k<i.length;k++)
+                                scope.myQEMSimplification.deleteMeshPoint(mesh,
+                                    i[k], j[k], l[k]);*/
+                        scope.tag.reStr("三角面的个数:" + geometry.index.count / 3);
+
+
+                        mesh.material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
+                        //mesh.material = new THREE.MeshBasicMaterial( { color: 0x00ffff, wireframe: true, transparent: true } );
+
+                        console.log(position);
+
+                        /*//0、100两个点位置相同
+                        //0、1两个点位置相同
+                        i=[0  ,0,55,155];
+                        j=[100,1,56, 56];
+                        for(var k=0;k<i.length;k++)
+                                scope.referee.assertion(
+                                    [position.array[3*i[k]],position.array[3*i[k]+1],position.array[3*i[k]+2]],
+                                    [position.array[3*j[k]],position.array[3*j[k]+1],position.array[3*j[k]+2]],
+                                    nameTest+i[k]+"和"+j[k]+"两个点的坐标应该一致"
+                                );*/
+
+                });//glb文件读取结束
+        },
         //测试deleteMeshPoint函数,过程可视
         test9:function (contextType){
                 if(typeof(contextType)==="undefined")this.setContext2();
@@ -2995,7 +3135,7 @@ QEMSimplificationTest.prototype={
                 //重点、线框图、断言
                 //if(typeof(urlType)=== "undefined")this.test8();
                 //测试findSuitablePoint2函数//线框图、断言
-                if(typeof(urlType)=== "undefined")this.test4_1_0();
+                if(typeof(urlType)=== "undefined")this.test4_1_00();
         },
 }
 var myQEMSimplificationTest=new QEMSimplificationTest(myTest);

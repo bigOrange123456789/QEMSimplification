@@ -116,6 +116,7 @@ QEMSimplification.prototype = {
         var index = geometry.index;
 
         if(this.errors===null){//初始化errors
+            this.errors=[];
             for (var i = 0; i < index.count / 3; i = i + 3){
                 var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
                 this.errors.push(myDistance);
@@ -268,7 +269,8 @@ QEMSimplification.prototype = {
             }
         mesh.geometry.index = index2;
 
-        for (i = 0; i < index.count / 3; i = i + 3)
+        if(this.errors!==null)//更新this.errors
+            for (i = 0; i < index.count / 3; i = i + 3)
             if(
                 positionSimilar(index2.array[i]   , p1)||
                 positionSimilar(index2.array[i+1] , p1)||
@@ -277,8 +279,7 @@ QEMSimplification.prototype = {
                 positionSimilar(index2.array[i+1] , p2)||
                 positionSimilar(index2.array[i+2] , p2)
             ){
-            var myDistance=this.computeError(mesh,index.array[i],index.array[i+1]);
-            this.errors[i/3](myDistance);
+                this.errors[i/3]=this.computeError(mesh,index.array[i],index.array[i+1]);
         }
         function positionSimilar(v1, v2) {
             if (
