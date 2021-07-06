@@ -735,7 +735,7 @@ QEMSimplificationTest.prototype={
                         scope.scene.add(glb.scene.children[1]);
 
                         //for(var k=0;k<100;k++){//1830//1731//
-                        while(geometry.index.count/3>5000){
+                        while(geometry.index.count/3>10900){
                                 var arrays=scope.myQEMSimplification.findSuitablePoint3(mesh);
                                 console.log(arrays);
                                 scope.myQEMSimplification.deleteMeshPoint(mesh,arrays[0],arrays[1]);
